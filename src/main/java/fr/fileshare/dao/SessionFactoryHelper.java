@@ -12,6 +12,7 @@ public class SessionFactoryHelper {
         // load config
         try {
             Configuration config = new Configuration();
+            
             sessionFactory = config.configure().buildSessionFactory();
         } catch (Exception ex) {
             ex.printStackTrace();

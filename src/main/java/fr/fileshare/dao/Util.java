@@ -1,6 +1,7 @@
 package fr.fileshare.dao;
 
 
+import fr.fileshare.views.MessageBox;
 import javax.mail.Message;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
@@ -134,6 +135,8 @@ public class Util {
         return param;
 
     }
+    
+    
 
 
 

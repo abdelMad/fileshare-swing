@@ -42,7 +42,7 @@ public interface IUtilisateurHandler {
      *
      * @return return true if the user is successfully registered if not false.
      */
-    boolean register(String nom, String prenom, String email, String mdp, String confirmMdp, String description);
+    boolean register(String nom, String prenom, String email, String mdp, String confirmMdp);
 
     /**
      * get user by id

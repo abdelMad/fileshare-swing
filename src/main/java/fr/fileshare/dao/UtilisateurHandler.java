@@ -2,10 +2,12 @@ package fr.fileshare.dao;
 
 import fr.fileshare.models.Utilisateur;
 import fr.fileshare.models.VerificationToken;
+import fr.fileshare.views.MessageBox;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.exception.ConstraintViolationException;
 import java.util.Date;
+import javax.swing.JOptionPane;
 
 
 public class UtilisateurHandler implements IUtilisateurHandler {
@@ -84,10 +86,12 @@ public class UtilisateurHandler implements IUtilisateurHandler {
 
                     if (object != null) {
                         utilisateur = (Utilisateur) object;
+                        MessageBox.messageBox("Connecté",MessageBox.SUCCESS);
 
                         check = true;
                     } else
-                        System.out.println("Email ou mot de passe incorrecte");
+                        JOptionPane.showMessageDialog(null, "Email ou mot de passe incorrecte", "Info", JOptionPane.PLAIN_MESSAGE);
+
 
                 } catch (Exception e) {
                     session.getTransaction().rollback();
@@ -96,12 +100,12 @@ public class UtilisateurHandler implements IUtilisateurHandler {
                     session.close();
                 }
             } else
-                System.out.println("Veuillez fournire votre mail et mot de passe");
+                JOptionPane.showMessageDialog(null, "Veuillez fournire votre mail et mot de passe", "Info", JOptionPane.PLAIN_MESSAGE);
 
         return check;
     }
 
-    public boolean register(String nom, String prenom, String email, String mdp, String confirmMdp, String description) {
+    public boolean register(String nom, String prenom, String email, String mdp, String confirmMdp) {
 
             if (nom.trim().length() > 0 && prenom.trim().length() > 0 && email.trim().length() > 0 && mdp.trim().length() > 0 && confirmMdp.trim().length() > 0) {
                 if (mdp.equals(confirmMdp)) {
@@ -113,27 +117,27 @@ public class UtilisateurHandler implements IUtilisateurHandler {
                         newUtilisateur.setEmailChecked(false);
                         newUtilisateur.setRegisterDate(new Date());
                         newUtilisateur.setMdp(Util.hashString(mdp));
-                        if (description.trim().length() > 0) newUtilisateur.setDescription(description);
                         int check = add(newUtilisateur);
                         if( check == 1) {
                             utilisateur = newUtilisateur;
                             IVerificationTokenHandler verificationTokenHandler = new VerificationTokenHandler();
                             verificationTokenHandler.sendVerificationMail(newUtilisateur, VerificationToken.VALIDATION_MAIL_TOKEN,true);
+                            JOptionPane.showMessageDialog(null, "Enregistre", "Info", JOptionPane.PLAIN_MESSAGE);
                         }else if (check == -1) {
-                            System.out.println("L' email que vous venez d'entrer est dèja associé a un compte");
+                            JOptionPane.showMessageDialog(null, "L' email que vous venez d'entrer est dèja associé a un compte", "Info", JOptionPane.PLAIN_MESSAGE);
                             return false;
                         }else{
-                            System.out.println("Une erreur est survenu! Veuillez resseyer plustard");
+                             JOptionPane.showMessageDialog(null, "Une erreur est survenu! Veuillez resseyer plustard", "Info", JOptionPane.PLAIN_MESSAGE);
                             return false;
                         }
                         return true;
                     }
                     else{
-                        System.out.println("Veuillez entrer un email valide");
+                         JOptionPane.showMessageDialog(null, "Veuillez entrer un email valide", "Info", JOptionPane.PLAIN_MESSAGE);
                     }
 
                 }else
-                    System.out.println("Les mots de passe entrée ne sont pas identiques!");
+                     JOptionPane.showMessageDialog(null, "Les mots de passe entrée ne sont pas identiques!", "Info", JOptionPane.PLAIN_MESSAGE);
 
         }
         return false;
