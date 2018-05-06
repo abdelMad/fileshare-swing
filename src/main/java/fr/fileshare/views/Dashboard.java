@@ -5,7 +5,14 @@
  */
 package fr.fileshare.views;
 
+import fr.fileshare.dao.DocumentHandler;
+import fr.fileshare.dao.IDocumentHandler;
+import fr.fileshare.dao.IMessageHandler;
+import fr.fileshare.dao.MessageHandler;
 import fr.fileshare.dao.UtilisateurHandler;
+import fr.fileshare.models.Document;
+import fr.fileshare.models.Message;
+import java.util.List;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 
@@ -381,6 +388,13 @@ public class Dashboard extends javax.swing.JFrame {
 
         
         tabPaneMain.setSelectedIndex(0);
+        IDocumentHandler documentHandler = new DocumentHandler();
+        List<Document> documents = documentHandler.getMesDocuments(UtilisateurHandler.utilisateur.getId());
+        
+        for (int i = 0; i < documents.size(); i++) {
+            System.out.println(documents.get(i).getIntitule());
+            
+        }
 
 
 
