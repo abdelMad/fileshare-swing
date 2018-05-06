@@ -13,7 +13,9 @@ public class Init
 {
     public static void main( String[] args )
     {
-        //xxxx
+        //xx
+        
+        
 
          Connexion c = new Connexion();
          c.setVisible(true);

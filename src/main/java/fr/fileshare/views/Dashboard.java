@@ -76,6 +76,14 @@ public class Dashboard extends javax.swing.JFrame {
         lblDecoIcone = new javax.swing.JLabel();
         jSeparator8 = new javax.swing.JSeparator();
         main = new javax.swing.JPanel();
+        tabPaneMain = new javax.swing.JTabbedPane();
+        jPanel8 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jPanel9 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jPanel10 = new javax.swing.JPanel();
+        jPanel11 = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setUndecorated(true);
@@ -125,7 +133,13 @@ public class Dashboard extends javax.swing.JFrame {
         jButton1.setForeground(new java.awt.Color(88, 88, 88));
         jButton1.setText("Accueil");
         jButton1.setBorderPainted(false);
-        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton1.setContentAreaFilled(false);
+        jButton1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
         jPanel1.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 200, 40));
         jPanel1.add(lblAccueilIcone, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 30, 40));
 
@@ -141,7 +155,8 @@ public class Dashboard extends javax.swing.JFrame {
         jButton3.setForeground(new java.awt.Color(88, 88, 88));
         jButton3.setText("   Mes Documents");
         jButton3.setBorderPainted(false);
-        jButton3.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton3.setContentAreaFilled(false);
+        jButton3.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jPanel3.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 250, 40));
         jPanel3.add(lblMesDocIcone, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 30, 40));
 
@@ -157,7 +172,8 @@ public class Dashboard extends javax.swing.JFrame {
         jButton4.setForeground(new java.awt.Color(88, 88, 88));
         jButton4.setText("         Documents Partagés");
         jButton4.setBorderPainted(false);
-        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton4.setContentAreaFilled(false);
+        jButton4.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jButton4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton4ActionPerformed(evt);
@@ -178,7 +194,8 @@ public class Dashboard extends javax.swing.JFrame {
         jButton5.setForeground(new java.awt.Color(88, 88, 88));
         jButton5.setText("              Nouveau Document");
         jButton5.setBorderPainted(false);
-        jButton5.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton5.setContentAreaFilled(false);
+        jButton5.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jPanel5.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 230, 40));
         jPanel5.add(nouveauDocIcone, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 30, 40));
 
@@ -194,7 +211,8 @@ public class Dashboard extends javax.swing.JFrame {
         jButton6.setForeground(new java.awt.Color(88, 88, 88));
         jButton6.setText("Messages");
         jButton6.setBorderPainted(false);
-        jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton6.setContentAreaFilled(false);
+        jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jPanel6.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 230, 40));
         jPanel6.add(lblMessagesIcone, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 30, 40));
 
@@ -212,7 +230,8 @@ public class Dashboard extends javax.swing.JFrame {
         jButton7.setText("    Deconnexion");
         jButton7.setToolTipText("");
         jButton7.setBorderPainted(false);
-        jButton7.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jButton7.setContentAreaFilled(false);
+        jButton7.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jButton7.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton7ActionPerformed(evt);
@@ -230,15 +249,98 @@ public class Dashboard extends javax.swing.JFrame {
 
         main.setBackground(new java.awt.Color(255, 255, 255));
 
+        jLabel1.setText("Page1");
+
+        javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
+        jPanel8.setLayout(jPanel8Layout);
+        jPanel8Layout.setHorizontalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addGap(342, 342, 342)
+                .addComponent(jLabel1)
+                .addContainerGap(393, Short.MAX_VALUE))
+        );
+        jPanel8Layout.setVerticalGroup(
+            jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel8Layout.createSequentialGroup()
+                .addGap(222, 222, 222)
+                .addComponent(jLabel1)
+                .addContainerGap(329, Short.MAX_VALUE))
+        );
+
+        tabPaneMain.addTab("tab1", jPanel8);
+
+        jLabel2.setText("Page2");
+
+        javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
+        jPanel9.setLayout(jPanel9Layout);
+        jPanel9Layout.setHorizontalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(362, 362, 362)
+                .addComponent(jLabel2)
+                .addContainerGap(373, Short.MAX_VALUE))
+        );
+        jPanel9Layout.setVerticalGroup(
+            jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel9Layout.createSequentialGroup()
+                .addGap(253, 253, 253)
+                .addComponent(jLabel2)
+                .addContainerGap(298, Short.MAX_VALUE))
+        );
+
+        tabPaneMain.addTab("tab2", jPanel9);
+
+        javax.swing.GroupLayout jPanel10Layout = new javax.swing.GroupLayout(jPanel10);
+        jPanel10.setLayout(jPanel10Layout);
+        jPanel10Layout.setHorizontalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 765, Short.MAX_VALUE)
+        );
+        jPanel10Layout.setVerticalGroup(
+            jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 565, Short.MAX_VALUE)
+        );
+
+        tabPaneMain.addTab("tab3", jPanel10);
+
+        javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
+        jPanel11.setLayout(jPanel11Layout);
+        jPanel11Layout.setHorizontalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 765, Short.MAX_VALUE)
+        );
+        jPanel11Layout.setVerticalGroup(
+            jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 565, Short.MAX_VALUE)
+        );
+
+        tabPaneMain.addTab("tab4", jPanel11);
+
+        javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+        jPanel12.setLayout(jPanel12Layout);
+        jPanel12Layout.setHorizontalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 765, Short.MAX_VALUE)
+        );
+        jPanel12Layout.setVerticalGroup(
+            jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 565, Short.MAX_VALUE)
+        );
+
+        tabPaneMain.addTab("tab5", jPanel12);
+
         javax.swing.GroupLayout mainLayout = new javax.swing.GroupLayout(main);
         main.setLayout(mainLayout);
         mainLayout.setHorizontalGroup(
             mainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 770, Short.MAX_VALUE)
+            .addComponent(tabPaneMain, javax.swing.GroupLayout.Alignment.TRAILING)
         );
         mainLayout.setVerticalGroup(
             mainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGroup(mainLayout.createSequentialGroup()
+                .addComponent(tabPaneMain, javax.swing.GroupLayout.PREFERRED_SIZE, 593, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 77, Short.MAX_VALUE))
         );
 
         container.add(main, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 70, 770, 670));
@@ -274,6 +376,15 @@ public class Dashboard extends javax.swing.JFrame {
     private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        
+        tabPaneMain.setSelectedIndex(0);
+
+
+
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -318,15 +429,22 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
@@ -344,5 +462,6 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JPanel nav;
     private javax.swing.JLabel nouveauDocIcone;
     private javax.swing.JPanel sideBar;
+    private javax.swing.JTabbedPane tabPaneMain;
     // End of variables declaration//GEN-END:variables
 }
