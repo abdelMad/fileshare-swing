@@ -1,6 +1,7 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.*;
+import fr.fileshare.model.Document;
+import fr.fileshare.model.Historique;
 import java.util.List;
 
 public interface IHistoriqueHandler {

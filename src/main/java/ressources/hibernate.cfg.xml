@@ -7,7 +7,7 @@
         <property name="hibernate.bytecode.use_reflection_optimizer">false</property>
         <property name="hibernate.connection.class_driver">com.mysql.jdbc.Driver</property>
         <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.password">WALID356</property>
+        <property name="hibernate.connection.password">root</property>
         <property name="hibernate.connection.pool_size">20</property>
         <property name="hibernate.connection.url">jdbc:mysql://localhost:3306/fileshare</property>
         <property name="hibernate.connection.username">root</property>
@@ -16,11 +16,11 @@
         <property name="hibernate.hbm2ddl.auto">update</property>
         <property name="hibernate.show_sql">false</property>
         <property name="hibernate.validator.apply_to_ddl">false</property>
-        <mapping class="fr.fileshare.models.Utilisateur"/>
-        <mapping class="fr.fileshare.models.Historique"/>
-        <mapping class="fr.fileshare.models.Message"/>
-        <mapping class="fr.fileshare.models.VerificationToken"/>
-        <mapping class="fr.fileshare.models.Document"/>
+        <mapping class="fr.fileshare.model.Utilisateur"/>
+        <mapping class="fr.fileshare.model.Historique"/>
+        <mapping class="fr.fileshare.model.Message"/>
+        <mapping class="fr.fileshare.model.VerificationToken"/>
+        <mapping class="fr.fileshare.model.Document"/>
 
     </session-factory>
 </hibernate-configuration>

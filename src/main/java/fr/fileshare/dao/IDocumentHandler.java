@@ -1,7 +1,7 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Document;
-import fr.fileshare.models.Utilisateur;
+import fr.fileshare.model.Document;
+import fr.fileshare.model.Utilisateur;
 
 import java.util.List;
 
@@ -25,6 +25,7 @@ public interface IDocumentHandler {
     boolean supprimerFavoris(int idU, int idDoc);
 
     boolean ajouterFavoris(int idU, int idDoc);
+    boolean telechargerDoc(Document document,String path);
 
 }
 

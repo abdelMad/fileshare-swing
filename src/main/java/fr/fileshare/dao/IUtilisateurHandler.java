@@ -1,6 +1,6 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Utilisateur;
+import fr.fileshare.model.Utilisateur;
 
 
 public interface IUtilisateurHandler {

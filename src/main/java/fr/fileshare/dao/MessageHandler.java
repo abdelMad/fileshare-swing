@@ -1,7 +1,7 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Message;
-import fr.fileshare.models.Utilisateur;
+import fr.fileshare.model.Message;
+import fr.fileshare.model.Utilisateur;
 import org.hibernate.Query;
 import org.hibernate.Session;
 
@@ -114,7 +114,7 @@ public class MessageHandler implements IMessageHandler {
             query.setParameter("id_emetteur", idEmetteur);
             Object result = query.uniqueResult();
             session.getTransaction().commit();
-            return ((Number)result).intValue() == 0;
+            return ((Number) result).intValue() == 0;
         } catch (Exception e) {
             e.printStackTrace();
             session.getTransaction().rollback();
@@ -124,18 +124,17 @@ public class MessageHandler implements IMessageHandler {
         return false;
     }
 
-    public List getConversation(int emetteur, int recepteur) {
-        List utilisateurs = new ArrayList();
+    public List<Message> getMessages(int sender, int receiver, int start, int end) {
         Session session = SessionFactoryHelper.getSessionFactory().openSession();
+        List<Message> messages = new ArrayList<>();
         try {
             session.beginTransaction();
-
-            Query query = session.createSQLQuery("SELECT * FROM message WHERE (emetteur=:emetteur AND recepteur = :recepteur) OR (emetteur=:recepteur AND recepteur = :emetteur) ORDER BY id DESC")
-                    .addEntity("message", Message.class);
-            query.setParameter("emetteur", emetteur);
-            query.setParameter("recepteur", recepteur);
-            query.setMaxResults(10);
-            utilisateurs = query.list();
+            Query query = session.createSQLQuery("SELECT DISTINCT * FROM message WHERE (emetteur=:sender AND recepteur=:receiver) OR (emetteur=:receiver AND recepteur=:sender) ORDER BY date DESC").addEntity("message", Message.class);
+            query.setParameter("sender", sender);
+            query.setParameter("receiver", receiver);
+            query.setFirstResult(start);
+            query.setMaxResults(end);
+            messages = (List<Message>) query.list();
             session.getTransaction().commit();
         } catch (Exception e) {
             session.getTransaction().rollback();
@@ -143,82 +142,48 @@ public class MessageHandler implements IMessageHandler {
         } finally {
             session.close();
         }
-        System.out.println(utilisateurs.size());
+        return messages;
+    }
+
+    public List<Utilisateur> getContacts(int userId) {
+
+        List<Utilisateur> utilisateurs = new ArrayList<>();
+        Session session = SessionFactoryHelper.getSessionFactory().openSession();
+        try {
+            session.beginTransaction();
+            Query query = session.createSQLQuery("SELECT DISTINCT * from utilisateur where (utilisateur.utilisateur_id = Any(SELECT DISTINCT message.recepteur FROM message WHERE message.emetteur = :userId) OR utilisateur.utilisateur_id = Any (SELECT DISTINCT message.emetteur FROM message WHERE message.recepteur = :userId))")
+                    .addEntity("user", Utilisateur.class);
+            query.setParameter("userId", userId);
+            utilisateurs = (List<Utilisateur>) query.list();
+            session.getTransaction().commit();
+        } catch (Exception e) {
+            session.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            session.close();
+        }
         return utilisateurs;
     }
 
-    public String getJsonConversation(int emetteur, int recepteur) {
-        List messages = getConversation(emetteur, recepteur);
-        String jsonResponse = "";
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd-MM-yyyy hh:mm");
-        Utilisateur recep;
-        for (int i = messages.size() - 1; i >= 0; i--) {
-            Message message = (Message) messages.get(i);
-            jsonResponse += "{\"emetteur\":\"" + (message.getEmetteur().getId() == emetteur ? "moi" : message.getEmetteur().getNom()) + "\","
-                    + "\"date\":\"" + simpleDateFormat.format(message.getDate()) + "\","
-                    + "\"txt\":\"" + message.getText() + "\"}" + (i > 0 ? "," : "");
-        }
-        IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
-        recep = utilisateurHandler.get(recepteur);
-
-        return "\"" + recep.getPrenom() + " " + recep.getNom() + "\",\"" + (recep.getImage() == null ? "/assets/images/people.png" : recep.getImage()) + "\"," + jsonResponse;
-    }
-
-    public String getJsonUtilisateursContactes(int idUtilisateur, int emeteur) {
-
-        IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
-        Utilisateur utilisateur = utilisateurHandler.get(emeteur);
-        List<Utilisateur> utilisateurs = (List<Utilisateur>) getUtilisateursContactes(idUtilisateur);
-        if(checkNouveauContact(idUtilisateur,emeteur)) {
-            Collections.reverse(utilisateurs);
-            utilisateurs.add(utilisateur);
-            Collections.reverse(utilisateurs);
-        }
-
-        String jsonResponse = "";
-        for (int i = 0; i < utilisateurs.size(); i++) {
-            Utilisateur u = utilisateurs.get(i);
-            jsonResponse += "{" +
-                    "\t\"id\": \"" + u.getId() + "\"," +
-                    "\t\"nomComplet\": \"" + u.getPrenom() + " " + u.getNom() + "\"," +
-                    "\t\"image\": \"" + (u.getImage() == null ? "/assets/images/people.png" : u.getImage()) + "\",\n" +
-                    "\t\"aEnvoyeMsg\": \"" + (u.getId() == emeteur || !messageEstVu(idUtilisateur,u.getId()) ? "true" : "false") + "\"" +
-                    "}" + (i < utilisateurs.size() - 1 ? "," : "");
-        }
-        return "[" + jsonResponse + "]";
-    }
-    public boolean changerStatusMessage(int utilisateur,int emetteur){
+    public List<Message> getGroupeMessages(int idG, int start, int end) {
         Session session = SessionFactoryHelper.getSessionFactory().openSession();
+        List<Message> messages = new ArrayList<>();
         try {
             session.beginTransaction();
-            Query query = session.createSQLQuery("UPDATE message set status='vu' WHERE emetteur="+emetteur+" AND recepteur="+utilisateur);
-            query.executeUpdate();
+            Query query = session.createSQLQuery("SELECT message.* FROM message JOIN document on message.messagesGroupe=document.document_id WHERE document.document_id=:idG ORDER BY date DESC").addEntity("message", Message.class);
+            query.setParameter("idG", idG);
+            query.setFirstResult(start);
+            query.setMaxResults(end);
+            messages = (List<Message>) query.list();
             session.getTransaction().commit();
-            return true;
-        }catch (Exception e){
+        } catch (Exception e) {
             session.getTransaction().rollback();
             e.printStackTrace();
-        }finally {
+        } finally {
             session.close();
         }
-        return false;
+        Collections.reverse(messages);
+        return messages;
     }
-    public boolean messageEstVu(int utilisateur,int emetteur){
-        Session session = SessionFactoryHelper.getSessionFactory().openSession();
-        try {
-            session.beginTransaction();
-            Query query = session.createSQLQuery("SELECT COUNT(*) FROM message WHERE status='-1' AND emetteur=:emetteur AND recepteur=:utilisateur");
-            query.setParameter("emetteur",emetteur);
-            query.setParameter("utilisateur",utilisateur);
-            Object result = query.uniqueResult();
-            session.getTransaction().commit();
-            return ((Number)result).intValue() == 0;
-        }catch (Exception e){
-            session.getTransaction().rollback();
-            e.printStackTrace();
-        }finally {
-            session.close();
-        }
-        return false;
-    }
+
 }

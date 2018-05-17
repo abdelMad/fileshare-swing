@@ -1,7 +1,7 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Utilisateur;
-import fr.fileshare.models.VerificationToken;
+import fr.fileshare.model.Utilisateur;
+import fr.fileshare.model.VerificationToken;
 import org.hibernate.Query;
 import org.hibernate.Session;
 

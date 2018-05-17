@@ -1,11 +1,12 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Message;
+import fr.fileshare.model.Message;
+import fr.fileshare.model.Utilisateur;
 
 import java.util.List;
 
 public interface IMessageHandler {
-    boolean add(Message message);
+   boolean add(Message message);
 
     boolean update(Message message);
 
@@ -15,14 +16,13 @@ public interface IMessageHandler {
 
     List getUtilisateursContactes(int id_utilisateur);
 
-    List getConversation(int emetteur, int recepteur);
-
-    String getJsonConversation(int emetteur, int recepteur);
-
-    String getJsonUtilisateursContactes(int idUtilisateur, int emeteur);
 
     boolean checkNouveauContact(int idUtilisateur, int idEmetteur);
 
-    boolean changerStatusMessage(int utilisateur, int emetteur);
+    List<Message> getMessages(int sender, int receiver, int start, int end);
+
+    List<Utilisateur> getContacts(int userId);
+
+    List<Message> getGroupeMessages(int idG, int start, int end);
 
 }

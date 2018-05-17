@@ -1,4 +1,4 @@
-package fr.fileshare.models;
+package fr.fileshare.model;
 
 import javax.persistence.*;
 import java.util.Date;

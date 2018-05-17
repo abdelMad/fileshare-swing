@@ -11,18 +11,30 @@ import fr.fileshare.dao.IDocumentHandler;
 import fr.fileshare.dao.IMessageHandler;
 import fr.fileshare.dao.MessageHandler;
 import fr.fileshare.dao.UtilisateurHandler;
-import fr.fileshare.models.Document;
-import fr.fileshare.models.Historique;
-import fr.fileshare.models.Message;
-import fr.fileshare.models.Utilisateur;
+import fr.fileshare.model.Document;
+import fr.fileshare.model.Historique;
+import fr.fileshare.model.Message;
+import fr.fileshare.model.Utilisateur;
+import fr.fileshare.utilities.JsonHelper;
+import fr.fileshare.websocket.ClientEndPointX;
+import java.awt.Cursor;
+import java.awt.GridBagConstraints;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
@@ -31,15 +43,23 @@ import javax.swing.table.DefaultTableModel;
  * @author abdelmoghitmadih
  */
 public class Dashboard extends javax.swing.JFrame {
-    
+
     private JFrame connexion;
+    int idSender = -1;
+    int idU;
+    ClientEndPointX chatWS;
+    ClientEndPointX chatGrpWS;
+    ClientEndPointX docWS;
+    int idSelectedDoc = -1;
+
     /**
      * Creates new form Dashboard
      */
     public Dashboard() {
         initComponents();
     }
-    public Dashboard(JFrame connexion){
+
+    public Dashboard(JFrame connexion) {
         this.connexion = connexion;
         this.connexion.setVisible(false);
         initComponents();
@@ -53,7 +73,8 @@ public class Dashboard extends javax.swing.JFrame {
         this.icone4.setIcon(new ImageIcon(getClass().getResource("/images/nouveau.png")));
         this.icone5.setIcon(new ImageIcon(getClass().getResource("/images/message.png")));
         this.icone6.setIcon(new ImageIcon(getClass().getResource("/images/deconnexion.png")));
-
+        loadMesDocuments();
+        pnlPartage.setVisible(false);
     }
 
     /**
@@ -108,10 +129,10 @@ public class Dashboard extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jScrollPane3 = new javax.swing.JScrollPane();
         MesDocuments = new javax.swing.JTable();
-        jButton11 = new javax.swing.JButton();
+        btnVoirmesDocs = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();
         jButton12 = new javax.swing.JButton();
-        jButton13 = new javax.swing.JButton();
+        btnModifierMesDoc = new javax.swing.JButton();
         jButton14 = new javax.swing.JButton();
         jPanel9 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
@@ -135,10 +156,41 @@ public class Dashboard extends javax.swing.JFrame {
         jButton24 = new javax.swing.JButton();
         jButton25 = new javax.swing.JButton();
         jLabel6 = new javax.swing.JLabel();
+        jPanel14 = new javax.swing.JPanel();
+        scrollPcontactes = new java.awt.ScrollPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        msgTxt = new javax.swing.JTextArea();
+        jButton2 = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        conversationMsg = new javax.swing.JTextArea();
+        jPanel15 = new javax.swing.JPanel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        convGrp = new javax.swing.JTextArea();
+        jScrollPane8 = new javax.swing.JScrollPane();
+        msgGrpTxt = new javax.swing.JTextArea();
+        jButton8 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
+        lblTitreDoc = new javax.swing.JLabel();
+        jPanel16 = new javax.swing.JPanel();
+        jScrollPane9 = new javax.swing.JScrollPane();
+        docTxt = new javax.swing.JEditorPane();
+        jButton9 = new javax.swing.JButton();
         jPanel12 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        cmbStatus = new javax.swing.JComboBox<>();
+        txtIntitule = new javax.swing.JTextField();
+        jScrollPane10 = new javax.swing.JScrollPane();
+        txtDesc = new javax.swing.JTextArea();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        txtTags = new javax.swing.JTextField();
+        pnlPartage = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        txtEmails = new javax.swing.JTextField();
+        jButton10 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setUndecorated(true);
         setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosed(java.awt.event.WindowEvent evt) {
@@ -173,7 +225,7 @@ public class Dashboard extends javax.swing.JFrame {
         jLabel9.setText("File Share");
         nav.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
 
-        container.add(nav, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 970, 70));
+        container.add(nav, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 970, 60));
 
         sideBar.setBackground(new java.awt.Color(242, 242, 242));
         sideBar.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -256,6 +308,11 @@ public class Dashboard extends javax.swing.JFrame {
         jButton5.setContentAreaFilled(false);
         jButton5.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jButton5.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        jButton5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton5ActionPerformed(evt);
+            }
+        });
         jPanel5.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 230, 40));
 
         sideBar.add(jPanel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 138, -1, 40));
@@ -273,6 +330,11 @@ public class Dashboard extends javax.swing.JFrame {
         jButton6.setBorderPainted(false);
         jButton6.setContentAreaFilled(false);
         jButton6.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jButton6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton6ActionPerformed(evt);
+            }
+        });
         jPanel6.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 230, 40));
 
         sideBar.add(jPanel6, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 181, 230, 40));
@@ -311,6 +373,7 @@ public class Dashboard extends javax.swing.JFrame {
         container.add(sideBar, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 70, 230, 670));
 
         main.setBackground(new java.awt.Color(255, 255, 255));
+        main.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         MesDocuments.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -329,15 +392,14 @@ public class Dashboard extends javax.swing.JFrame {
     });
     jScrollPane3.setViewportView(MesDocuments);
 
-    jButton11.setText("Voir Document");
-    jButton11.addActionListener(new java.awt.event.ActionListener() {
+    btnVoirmesDocs.setText("Voir Document");
+    btnVoirmesDocs.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jButton11ActionPerformed(evt);
+            btnVoirmesDocsActionPerformed(evt);
         }
     });
 
     jLabel3.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel3.setForeground(new java.awt.Color(0, 0, 0));
     jLabel3.setText("                                 Action");
 
     jButton12.setText("Télécharger");
@@ -347,10 +409,10 @@ public class Dashboard extends javax.swing.JFrame {
         }
     });
 
-    jButton13.setText("Modifier");
-    jButton13.addActionListener(new java.awt.event.ActionListener() {
+    btnModifierMesDoc.setText("Modifier");
+    btnModifierMesDoc.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jButton13ActionPerformed(evt);
+            btnModifierMesDocActionPerformed(evt);
         }
     });
 
@@ -375,9 +437,9 @@ public class Dashboard extends javax.swing.JFrame {
             .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnVoirmesDocs, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGap(236, 236, 236))
     );
@@ -394,14 +456,14 @@ public class Dashboard extends javax.swing.JFrame {
             .addGap(18, 18, 18)
             .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jButton11, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(btnVoirmesDocs, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jButton13, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(49, Short.MAX_VALUE))
+            .addContainerGap(47, Short.MAX_VALUE))
     );
 
     tabPaneMain.addTab("tab1", jPanel8);
@@ -424,7 +486,6 @@ public class Dashboard extends javax.swing.JFrame {
     jScrollPane4.setViewportView(MesFavoris);
 
     jLabel4.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel4.setForeground(new java.awt.Color(0, 0, 0));
     jLabel4.setText("                                 Action");
 
     jButton15.setText("Voir Document");
@@ -522,7 +583,6 @@ public class Dashboard extends javax.swing.JFrame {
     jScrollPane5.setViewportView(Historique);
 
     jLabel5.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel5.setForeground(new java.awt.Color(0, 0, 0));
     jLabel5.setText("                                 Action");
 
     jButton20.setText("Voir Document");
@@ -576,7 +636,7 @@ public class Dashboard extends javax.swing.JFrame {
             .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton22, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(89, Short.MAX_VALUE))
+            .addContainerGap(88, Short.MAX_VALUE))
     );
 
     tabPaneMain.addTab("tab3", jPanel10);
@@ -613,7 +673,6 @@ public class Dashboard extends javax.swing.JFrame {
     });
 
     jLabel6.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel6.setForeground(new java.awt.Color(0, 0, 0));
     jLabel6.setText("                                 Action");
 
     javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
@@ -648,31 +707,172 @@ public class Dashboard extends javax.swing.JFrame {
 
     tabPaneMain.addTab("tab4", jPanel11);
 
-    javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
-    jPanel12.setLayout(jPanel12Layout);
-    jPanel12Layout.setHorizontalGroup(
-        jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGap(0, 734, Short.MAX_VALUE)
+    msgTxt.setColumns(20);
+    msgTxt.setRows(5);
+    jScrollPane1.setViewportView(msgTxt);
+
+    jButton2.setText("Envoyer");
+    jButton2.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton2ActionPerformed(evt);
+        }
+    });
+
+    jScrollPane2.setEnabled(false);
+
+    conversationMsg.setEditable(false);
+    conversationMsg.setColumns(20);
+    conversationMsg.setRows(5);
+    conversationMsg.setEnabled(false);
+    conversationMsg.setFocusable(false);
+    jScrollPane2.setViewportView(conversationMsg);
+
+    javax.swing.GroupLayout jPanel14Layout = new javax.swing.GroupLayout(jPanel14);
+    jPanel14.setLayout(jPanel14Layout);
+    jPanel14Layout.setHorizontalGroup(
+        jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+            .addContainerGap()
+            .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(jPanel14Layout.createSequentialGroup()
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 420, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jButton2))
+                .addComponent(jScrollPane2))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(scrollPcontactes, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(35, 35, 35))
     );
-    jPanel12Layout.setVerticalGroup(
-        jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGap(0, 662, Short.MAX_VALUE)
+    jPanel14Layout.setVerticalGroup(
+        jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addComponent(scrollPcontactes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel14Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 544, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(jScrollPane1)
+                .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
     );
+
+    tabPaneMain.addTab("messages", jPanel14);
+
+    jPanel15.setBackground(new java.awt.Color(255, 255, 255));
+    jPanel15.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+    convGrp.setEditable(false);
+    convGrp.setColumns(20);
+    convGrp.setRows(5);
+    convGrp.setEnabled(false);
+    convGrp.setFocusable(false);
+    jScrollPane7.setViewportView(convGrp);
+
+    jPanel15.add(jScrollPane7, new org.netbeans.lib.awtextra.AbsoluteConstraints(451, 11, 281, 507));
+
+    msgGrpTxt.setColumns(20);
+    msgGrpTxt.setRows(4);
+    jScrollPane8.setViewportView(msgGrpTxt);
+
+    jPanel15.add(jScrollPane8, new org.netbeans.lib.awtextra.AbsoluteConstraints(451, 536, 185, 96));
+
+    jButton8.setText("Envoyer");
+    jButton8.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton8ActionPerformed(evt);
+        }
+    });
+    jPanel15.add(jButton8, new org.netbeans.lib.awtextra.AbsoluteConstraints(642, 536, 90, 96));
+
+    jLabel2.setFont(new java.awt.Font("Tahoma", 0, 14)); // NOI18N
+    jLabel2.setText("Document:");
+    jPanel15.add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 34, -1, -1));
+
+    lblTitreDoc.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+    lblTitreDoc.setText("Blala:");
+    jPanel15.add(lblTitreDoc, new org.netbeans.lib.awtextra.AbsoluteConstraints(251, 34, -1, -1));
+
+    jPanel16.setBackground(new java.awt.Color(255, 255, 255));
+
+    docTxt.setContentType("text/html"); // NOI18N
+    jScrollPane9.setViewportView(docTxt);
+
+    jButton9.setText("Modifier");
+    jButton9.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton9ActionPerformed(evt);
+        }
+    });
+
+    javax.swing.GroupLayout jPanel16Layout = new javax.swing.GroupLayout(jPanel16);
+    jPanel16.setLayout(jPanel16Layout);
+    jPanel16Layout.setHorizontalGroup(
+        jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel16Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.DEFAULT_SIZE, 425, Short.MAX_VALUE)
+            .addContainerGap())
+        .addGroup(jPanel16Layout.createSequentialGroup()
+            .addGap(174, 174, 174)
+            .addComponent(jButton9)
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    jPanel16Layout.setVerticalGroup(
+        jPanel16Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel16Layout.createSequentialGroup()
+            .addComponent(jButton9)
+            .addGap(30, 30, 30)
+            .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 511, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap(29, Short.MAX_VALUE))
+    );
+
+    jPanel15.add(jPanel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 69, -1, -1));
+
+    tabPaneMain.addTab("modif doc", jPanel15);
+
+    jPanel12.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+    jLabel7.setText("Titre du document");
+    jPanel12.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 60, -1, -1));
+
+    cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Public", "Just moi", "Des utilisateurs" }));
+    cmbStatus.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            cmbStatusActionPerformed(evt);
+        }
+    });
+    jPanel12.add(cmbStatus, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 330, 219, 28));
+    jPanel12.add(txtIntitule, new org.netbeans.lib.awtextra.AbsoluteConstraints(356, 56, 219, 27));
+
+    txtDesc.setColumns(20);
+    txtDesc.setRows(5);
+    jScrollPane10.setViewportView(txtDesc);
+
+    jPanel12.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 120, 219, -1));
+
+    jLabel8.setText("Description");
+    jPanel12.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 130, -1, -1));
+
+    jLabel11.setText("Tags");
+    jPanel12.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 270, -1, -1));
+
+    jLabel12.setText("Qui peut voir ce fichier");
+    jPanel12.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 340, -1, -1));
+    jPanel12.add(txtTags, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 260, 219, 27));
+
+    pnlPartage.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+    jLabel13.setText("Veuillez entrer les adresses emails des utilisateurs");
+    pnlPartage.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 43, -1, -1));
+    pnlPartage.add(txtEmails, new org.netbeans.lib.awtextra.AbsoluteConstraints(348, 37, 219, 27));
+
+    jPanel12.add(pnlPartage, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 380, -1, -1));
+
+    jButton10.setText("Valider");
+    jPanel12.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(321, 522, 79, 36));
 
     tabPaneMain.addTab("tab5", jPanel12);
 
-    javax.swing.GroupLayout mainLayout = new javax.swing.GroupLayout(main);
-    main.setLayout(mainLayout);
-    mainLayout.setHorizontalGroup(
-        mainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, mainLayout.createSequentialGroup()
-            .addGap(0, 31, Short.MAX_VALUE)
-            .addComponent(tabPaneMain, javax.swing.GroupLayout.PREFERRED_SIZE, 739, javax.swing.GroupLayout.PREFERRED_SIZE))
-    );
-    mainLayout.setVerticalGroup(
-        mainLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addComponent(tabPaneMain)
-    );
+    main.add(tabPaneMain, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 740, 690));
 
     container.add(main, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 70, 770, 670));
 
@@ -680,7 +880,7 @@ public class Dashboard extends javax.swing.JFrame {
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addComponent(container, javax.swing.GroupLayout.DEFAULT_SIZE, 973, Short.MAX_VALUE)
+        .addComponent(container, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
     layout.setVerticalGroup(
         layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -696,7 +896,7 @@ public class Dashboard extends javax.swing.JFrame {
         this.setVisible(false);
         connexion.setVisible(true);
         this.dispose();
-            
+
     }//GEN-LAST:event_jButton7ActionPerformed
 
     private void formWindowClosed(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosed
@@ -712,17 +912,17 @@ public class Dashboard extends javax.swing.JFrame {
         tabPaneMain.setEnabledAt(2, false);
         tabPaneMain.setEnabledAt(3, false);
         tabPaneMain.setEnabledAt(4, false);
-        
+
         tabPaneMain.setSelectedIndex(2);
         IDocumentHandler documentHandler = new DocumentHandler();
         List<Document> documents = documentHandler.getMesDocuments(UtilisateurHandler.utilisateur.getId());
-        
+
         DefaultTableModel model = (DefaultTableModel) Historique.getModel();
         /* Supprimer les données du JTable avant chaque remplissage */
         model.setRowCount(0);
-        
+
         Object rowData[] = new Object[8];
-           
+
         /* Cacher les colonne id_documents et id_auteur */
         Historique.getColumnModel().getColumn(0).setMinWidth(0);
         Historique.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -730,7 +930,7 @@ public class Dashboard extends javax.swing.JFrame {
         Historique.getColumnModel().getColumn(7).setMinWidth(0);
         Historique.getColumnModel().getColumn(7).setMaxWidth(0);
         Historique.getColumnModel().getColumn(7).setWidth(0);
-        
+
         for (int i = 0; i < documents.size(); i++) {
             rowData[0] = documents.get(i).getAuteur().getId();
             rowData[1] = documents.get(i).getIntitule();
@@ -751,11 +951,11 @@ public class Dashboard extends javax.swing.JFrame {
                     for (Utilisateur utilisateur : user) {
                         if (utilisateur.getId() == UtilisateurHandler.utilisateur.getId()) {
                             partager_avec += "moi ";
-                        }
-                        else {
+                        } else {
                             partager_avec += utilisateur.getNom() + " ";
                         }
-                    }   rowData[6] = partager_avec;
+                    }
+                    rowData[6] = partager_avec;
                     break;
                 default:
                     break;
@@ -773,7 +973,7 @@ public class Dashboard extends javax.swing.JFrame {
         tabPaneMain.setEnabledAt(2, false);
         tabPaneMain.setEnabledAt(3, false);
         tabPaneMain.setEnabledAt(4, false);
-        
+
         tabPaneMain.setSelectedIndex(1);
         IDocumentHandler documentHandler = new DocumentHandler();
         List<Document> documents = documentHandler.getDocumentsFavoris(UtilisateurHandler.utilisateur, 0, 400);
@@ -783,7 +983,7 @@ public class Dashboard extends javax.swing.JFrame {
         model.setRowCount(0);
 
         Object rowData[] = new Object[8];
-           
+
         /* Cacher les colonne id_documents et id_auteur */
         MesFavoris.getColumnModel().getColumn(0).setMinWidth(0);
         MesFavoris.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -812,11 +1012,11 @@ public class Dashboard extends javax.swing.JFrame {
                     for (Utilisateur utilisateur : user) {
                         if (utilisateur.getId() == UtilisateurHandler.utilisateur.getId()) {
                             partager_avec += "moi ";
-                        }
-                        else {
+                        } else {
                             partager_avec += utilisateur.getNom() + " ";
                         }
-                    }   rowData[6] = partager_avec;
+                    }
+                    rowData[6] = partager_avec;
                     break;
                 default:
                     break;
@@ -833,17 +1033,20 @@ public class Dashboard extends javax.swing.JFrame {
         tabPaneMain.setEnabledAt(2, false);
         tabPaneMain.setEnabledAt(3, false);
         tabPaneMain.setEnabledAt(4, false);
+        loadMesDocuments();
         
+    }//GEN-LAST:event_jButton1ActionPerformed
+    private void loadMesDocuments(){
         tabPaneMain.setSelectedIndex(0);
         IDocumentHandler documentHandler = new DocumentHandler();
         List<Document> documents = documentHandler.getMesDocuments(UtilisateurHandler.utilisateur.getId());
-        
+
         DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
         /* Supprimer les données du JTable avant chaque remplissage */
         model.setRowCount(0);
-        
+
         Object rowData[] = new Object[8];
-           
+
         /* Cacher les colonne id_documents et id_auteur */
         MesDocuments.getColumnModel().getColumn(0).setMinWidth(0);
         MesDocuments.getColumnModel().getColumn(0).setMaxWidth(0);
@@ -851,7 +1054,7 @@ public class Dashboard extends javax.swing.JFrame {
         MesDocuments.getColumnModel().getColumn(7).setMinWidth(0);
         MesDocuments.getColumnModel().getColumn(7).setMaxWidth(0);
         MesDocuments.getColumnModel().getColumn(7).setWidth(0);
-        
+
         for (int i = 0; i < documents.size(); i++) {
             rowData[0] = documents.get(i).getAuteur().getId();
             rowData[1] = documents.get(i).getIntitule();
@@ -872,11 +1075,11 @@ public class Dashboard extends javax.swing.JFrame {
                     for (Utilisateur utilisateur : user) {
                         if (utilisateur.getId() == UtilisateurHandler.utilisateur.getId()) {
                             partager_avec += "moi ";
-                        }
-                        else {
+                        } else {
                             partager_avec += utilisateur.getNom() + " ";
                         }
-                    }   rowData[6] = partager_avec;
+                    }
+                    rowData[6] = partager_avec;
                     break;
                 default:
                     break;
@@ -884,22 +1087,163 @@ public class Dashboard extends javax.swing.JFrame {
             rowData[7] = documents.get(i).getId();
             model.addRow(rowData);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
+    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
+        URI uri = null;
+        try {
+            uri = new URI("ws://localhost:8085/chat/" + UtilisateurHandler.utilisateur.getId() + "/-1");
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+        try {
+            chatWS = new ClientEndPointX(uri);
+            chatWS.addMessageHandler(responseString -> {
+                try {
+                    JsonHelper helper = new JsonHelper();
+                    Map<String, String> msg = helper.decodeMessage(responseString);
+                    String conversation = Dashboard.this.conversationMsg.getText();
+                    conversation += "\n" + msg.get("sender") + " : " + msg.get("message") + "\n";
+                    Dashboard.this.conversationMsg.setText(conversation);
+                } catch (Exception e) {
+
+                }
+
+                //System.out.println(responseString);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        tabPaneMain.setSelectedIndex(4);
+        IMessageHandler messageHandler = new MessageHandler();
+        List<Utilisateur> utilisateurs = messageHandler.getContacts(UtilisateurHandler.utilisateur.getId());
+        GridBagConstraints c = new GridBagConstraints();
+        JPanel jpContactes = new JPanel();
+        c.gridx = 0;
+        for (int i = 0; i < utilisateurs.size(); i++) {
+            c.gridy = i + 1;
+            System.out.println(utilisateurs.get(i).getNom());
+            JButton jbtn = new JButton(utilisateurs.get(i).getNom());
+            jbtn.setActionCommand(Integer.toString(utilisateurs.get(i).getId()));
+            jbtn.addMouseListener(new MouseListener() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+
+                    IMessageHandler messageHandler = new MessageHandler();
+                    List<Message> messages = messageHandler.getMessages(UtilisateurHandler.utilisateur.getId(), Integer.parseInt(((JButton) e.getComponent()).getActionCommand()), 0, 300);
+                    Dashboard.this.idSender = Integer.parseInt(((JButton) e.getComponent()).getActionCommand());
+                    String conversation = "";
+                    for (int j = messages.size() - 1; j >= 0; j--) {
+                        String sender = "moi";
+                        Message msg = messages.get(j);
+                        if (!msg.getEmetteur().equals(UtilisateurHandler.utilisateur)) {
+                            sender = msg.getEmetteur().getNom();
+                        }
+                        conversation += sender + " : " + msg.getText() + "\n";
+                    }
+                    Dashboard.this.conversationMsg.setText(conversation);
+                }
+
+                @Override
+                public void mousePressed(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseReleased(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                }
+            });
+            jpContactes.add(jbtn, c);
+        }
+        scrollPcontactes.add(jpContactes);
+
+    }//GEN-LAST:event_jButton6ActionPerformed
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+
+        String txt = msgTxt.getText();
+        if (txt.length() > 0) {
+            JsonHelper helper = new JsonHelper();
+            HashMap<String, String> msg = new HashMap<>();
+            msg.put("message", txt.trim().replace("\n", "<br>"));
+            msg.put("type", "solo");
+            msg.put("sender", "moi");
+            msg.put("receiver", Integer.toString(idSender));
+            msg.put("sentDate", new Date().toString());
+            msg.put("senderImg", (UtilisateurHandler.utilisateur.getImage() == null) ? "/assets/images/people.png" : UtilisateurHandler.utilisateur.getImage());
+            msg.put("senderId", Integer.toString(UtilisateurHandler.utilisateur.getId()));
+            String msgEncoded = helper.encodeMessage(msg);
+            chatWS.sendMessage(msgEncoded);
+            conversationMsg.setText(conversationMsg.getText() + "moi : " + txt);
+            msgTxt.setText("");
+        }
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton25ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton25ActionPerformed
+        // TODO add your handling code here:
+        /* Voir Version Historique */
+
+        DefaultTableModel model = (DefaultTableModel) HistoriqueDoc.getModel();
+        int i = HistoriqueDoc.getSelectedRow();
+
+        if (i >= 0) {
+            System.out.println("ID de la version du document à consulter : " + Integer.parseInt(model.getValueAt(i, 4).toString()));
+        } else {
+            System.out.println("Aucun Document n'a été selectionné !");
+        }
+    }//GEN-LAST:event_jButton25ActionPerformed
+
+    private void jButton24ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton24ActionPerformed
+        // TODO add your handling code here:
+        /* Revenir à une version depuis historique */
+
+        DefaultTableModel model = (DefaultTableModel) HistoriqueDoc.getModel();
+        int i = HistoriqueDoc.getSelectedRow();
+
+        if (i >= 0) {
+            /* Verifier si l'utilisateur connecté est l'auteur du document avant suppression */
+            if (Integer.parseInt(model.getValueAt(i, 0).toString()) == UtilisateurHandler.utilisateur.getId()) {
+                int confirmation = JOptionPane.showConfirmDialog(null, "Voulez-vous vraiment Revenir à cette version ?", "Confirmation retour version précédente", JOptionPane.YES_NO_OPTION);
+                if (confirmation == 0) {
+
+                    /* Récuperer l'historique */
+                    HistoriqueHandler historiqueHandler = new HistoriqueHandler();
+                    Historique historique = historiqueHandler.get(Integer.parseInt(model.getValueAt(i, 4).toString()));
+
+                    /* Récupérer le document */
+                    DocumentHandler documentHandler = new DocumentHandler();
+                    Document document = documentHandler.get(Integer.parseInt(model.getValueAt(i, 5).toString()));
+                }
+            }
+        } else {
+            System.out.println("Aucun Document n'a été selectionné !");
+        }
+    }//GEN-LAST:event_jButton24ActionPerformed
+
+    private void HistoriqueDocMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_HistoriqueDocMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_HistoriqueDocMouseClicked
 
     private void jButton22ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton22ActionPerformed
         // TODO add your handling code here:
         /* Voir Historique Document */
-        
+
         DefaultTableModel model = (DefaultTableModel) Historique.getModel();
         int i = Historique.getSelectedRow();
-        
+
         int id_doc = Integer.parseInt(model.getValueAt(i, 7).toString());
         HistoriqueHandler historiqueHandler = new HistoriqueHandler();
         List<Historique> historique = historiqueHandler.getHistorique(UtilisateurHandler.utilisateur.getId(), id_doc, 0, 400);
-        
+
         if (i >= 0) {
             tabPaneMain.setSelectedIndex(3);
-        
+
             tabPaneMain.setEnabledAt(0, false);
             tabPaneMain.setEnabledAt(1, false);
             tabPaneMain.setEnabledAt(2, false);
@@ -929,12 +1273,9 @@ public class Dashboard extends javax.swing.JFrame {
                 rowData[5] = historique.get(l).getDocument().getId();
                 model1.addRow(rowData);
             }
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
-        
-        
 
     }//GEN-LAST:event_jButton22ActionPerformed
 
@@ -947,8 +1288,7 @@ public class Dashboard extends javax.swing.JFrame {
 
         if (i >= 0) {
             System.out.println("ID du document à modifier : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton21ActionPerformed
@@ -961,9 +1301,8 @@ public class Dashboard extends javax.swing.JFrame {
         int i = Historique.getSelectedRow();
 
         if (i >= 0) {
-            System.out.println("ID du document à consulter : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+            System.out.println("ID du document à consulter : " + idSelectedDoc);
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton20ActionPerformed
@@ -989,8 +1328,7 @@ public class Dashboard extends javax.swing.JFrame {
                     documentHandler.supprimerFavoris(UtilisateurHandler.utilisateur.getId(), Integer.parseInt(model.getValueAt(i, 7).toString()));
                 }
             }
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton19ActionPerformed
@@ -1013,8 +1351,7 @@ public class Dashboard extends javax.swing.JFrame {
                     documentHandler.delete(document);
                 }
             }
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton18ActionPerformed
@@ -1028,8 +1365,7 @@ public class Dashboard extends javax.swing.JFrame {
 
         if (i >= 0) {
             System.out.println("ID du document à modifier : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton17ActionPerformed
@@ -1047,8 +1383,7 @@ public class Dashboard extends javax.swing.JFrame {
 
             }
             System.out.println("Emplacement choisi : " + fc.getSelectedFile().getAbsolutePath());
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton16ActionPerformed
@@ -1062,8 +1397,7 @@ public class Dashboard extends javax.swing.JFrame {
 
         if (i >= 0) {
             System.out.println("ID du document à consulter : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton15ActionPerformed
@@ -1090,13 +1424,12 @@ public class Dashboard extends javax.swing.JFrame {
                     documentHandler.delete(document);
                 }
             }
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton14ActionPerformed
 
-    private void jButton13ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton13ActionPerformed
+    private void btnModifierMesDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnModifierMesDocActionPerformed
         // TODO add your handling code here:
         /* Modifier Document */
 
@@ -1104,46 +1437,95 @@ public class Dashboard extends javax.swing.JFrame {
         int i = MesDocuments.getSelectedRow();
 
         if (i >= 0) {
+            idSelectedDoc = Integer.parseInt(model.getValueAt(i, 7).toString());
+            URI uri = null;
+            try {
+                uri = new URI("ws://localhost:8085/chat/" + UtilisateurHandler.utilisateur.getId() + "/" + idSelectedDoc);
+            } catch (URISyntaxException e) {
+                e.printStackTrace();
+            }
+            try {
+
+                chatGrpWS = new ClientEndPointX(uri);
+                chatGrpWS.addMessageHandler(responseString -> {
+                    try {
+                        JsonHelper helper = new JsonHelper();
+                        Map<String, String> msg = helper.decodeMessage(responseString);
+                        String conversation = Dashboard.this.convGrp.getText();
+                        conversation += "\n" + msg.get("sender") + " : " + msg.get("message") + "\n";
+                        Dashboard.this.convGrp.setText(conversation);
+                    } catch (Exception e) {
+
+                    }
+
+                    //System.out.println(responseString);
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            IDocumentHandler documentHandler = new DocumentHandler();
+            Document document = documentHandler.get(idSelectedDoc);
+            docTxt.setText(document.getDernierContenu());
+            lblTitreDoc.setText(document.getIntitule());
+            IMessageHandler messageHandler = new MessageHandler();
+            List<Message> messages = messageHandler.getGroupeMessages(idSelectedDoc, 0, 400);
+            String conversation = "";
+            for (int j = messages.size() - 1; j >= 0; j--) {
+                String sender = "moi";
+                Message msg = messages.get(j);
+                if (!msg.getEmetteur().equals(UtilisateurHandler.utilisateur)) {
+                    sender = msg.getEmetteur().getNom();
+                }
+                conversation += sender + " : " + msg.getText() + "\n";
+            }
+            tabPaneMain.setSelectedIndex(6);
+            convGrp.setText(conversation);
             System.out.println("ID du document à modifier : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
-    }//GEN-LAST:event_jButton13ActionPerformed
+    }//GEN-LAST:event_btnModifierMesDocActionPerformed
 
     private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
         // TODO add your handling code here:
         /* Téléchargement */
+        DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
         int i = MesDocuments.getSelectedRow();
+        idSelectedDoc = Integer.parseInt(model.getValueAt(i, 7).toString());
 
         if (i >= 0) {
             JFileChooser fc = new JFileChooser();
             fc.setDialogTitle("Téléchargement Document");
             fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             if (fc.showOpenDialog(jButton12) == JFileChooser.APPROVE_OPTION) {
-
+                this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                jButton12.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                System.out.println("Emplacement choisi : " + fc.getSelectedFile().getAbsolutePath());
+                IDocumentHandler documentHandler = new DocumentHandler();
+                System.out.println(i);
+                Document document = documentHandler.get(idSelectedDoc);
+                documentHandler.telechargerDoc(document, fc.getSelectedFile().getAbsolutePath());
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
             }
-            System.out.println("Emplacement choisi : " + fc.getSelectedFile().getAbsolutePath());
-        }
-        else {
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
     }//GEN-LAST:event_jButton12ActionPerformed
 
-    private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
-        // TODO add your handling code here:
+    private void btnVoirmesDocsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirmesDocsActionPerformed
         /* Voir Document */
 
         DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
         int i = MesDocuments.getSelectedRow();
 
         if (i >= 0) {
-            System.out.println("ID du document à consulter : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
-        }
-        else {
+            IDocumentHandler documentHandler = new DocumentHandler();
+            Document doc = documentHandler.get(Integer.parseInt(model.getValueAt(i, 7).toString()));
+            VoirDocument voirDocument = new VoirDocument(doc);
+        } else {
             System.out.println("Aucun Document n'a été selectionné !");
         }
-    }//GEN-LAST:event_jButton11ActionPerformed
+    }//GEN-LAST:event_btnVoirmesDocsActionPerformed
 
     private void MesDocumentsMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MesDocumentsMouseClicked
         // TODO add your handling code here:
@@ -1152,94 +1534,61 @@ public class Dashboard extends javax.swing.JFrame {
         //jButton11.setActionCommand(Integer.toString(model.getValueAt(i, 1)));
     }//GEN-LAST:event_MesDocumentsMouseClicked
 
-    private void HistoriqueDocMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_HistoriqueDocMouseClicked
-        // TODO add your handling code here:
-    }//GEN-LAST:event_HistoriqueDocMouseClicked
+    private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
 
-    private void jButton24ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton24ActionPerformed
-        // TODO add your handling code here:
-        /* Revenir à une version depuis historique */
+        String txt = msgGrpTxt.getText();
+        if (txt.length() > 0) {
+            JsonHelper helper = new JsonHelper();
+            HashMap<String, String> msg = new HashMap<>();
+            msg.put("message", txt.trim().replace("\n", "<br>"));
+            msg.put("type", "grp");
+            msg.put("sender", "moi");
+            msg.put("receiver", Integer.toString(idSelectedDoc));
+            msg.put("sentDate", new Date().toString());
+            msg.put("senderImg", (UtilisateurHandler.utilisateur.getImage() == null) ? "/assets/images/people.png" : UtilisateurHandler.utilisateur.getImage());
+            msg.put("senderId", Integer.toString(UtilisateurHandler.utilisateur.getId()));
+            String msgEncoded = helper.encodeMessage(msg);
+            chatGrpWS.sendMessage(msgEncoded);
+            convGrp.setText(convGrp.getText() + "moi : " + txt);
+            msgGrpTxt.setText("");
+        }
+    }//GEN-LAST:event_jButton8ActionPerformed
+
+    private void cmbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbStatusActionPerformed
+        if(!cmbStatus.getSelectedItem().toString().equals("Des utilisateurs")){
+            pnlPartage.setVisible(true);
+        }else
+            pnlPartage.setVisible(true);
+        pnlPartage.repaint();
+    }//GEN-LAST:event_cmbStatusActionPerformed
+
+    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+        idSelectedDoc =-1;
+        txtDesc.setText("");
+        txtIntitule.setText("");
+        txtTags.setText("");
+        txtEmails.setText("");
+        tabPaneMain.setSelectedIndex(6);
         
-        DefaultTableModel model = (DefaultTableModel) HistoriqueDoc.getModel();
-        int i = HistoriqueDoc.getSelectedRow();
         
-        if (i >= 0) {
-            /* Verifier si l'utilisateur connecté est l'auteur du document avant suppression */
-            if (Integer.parseInt(model.getValueAt(i, 0).toString()) == UtilisateurHandler.utilisateur.getId()) {
-                int confirmation = JOptionPane.showConfirmDialog(null, "Voulez-vous vraiment Revenir à cette version ?", "Confirmation retour version précédente", JOptionPane.YES_NO_OPTION);
-                if (confirmation == 0) {
-                    
-                    /* Récuperer l'historique */
-                    HistoriqueHandler historiqueHandler = new HistoriqueHandler();
-                    Historique historique = historiqueHandler.get(Integer.parseInt(model.getValueAt(i, 4).toString()));
-                    
-                    /* Récupérer le document */
-                    DocumentHandler documentHandler = new DocumentHandler();
-                    Document document = documentHandler.get(Integer.parseInt(model.getValueAt(i, 5).toString()));
-                }
-            }
-        }
-        else {
-            System.out.println("Aucun Document n'a été selectionné !");
-        }
-    }//GEN-LAST:event_jButton24ActionPerformed
+    }//GEN-LAST:event_jButton5ActionPerformed
 
-    private void jButton25ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton25ActionPerformed
-        // TODO add your handling code here:
-        /* Voir Version Historique */
-
-        DefaultTableModel model = (DefaultTableModel) HistoriqueDoc.getModel();
-        int i = HistoriqueDoc.getSelectedRow();
-
-        if (i >= 0) {
-            System.out.println("ID de la version du document à consulter : " + Integer.parseInt(model.getValueAt(i, 4).toString()));
-        }
-        else {
-            System.out.println("Aucun Document n'a été selectionné !");
-        }
-    }//GEN-LAST:event_jButton25ActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Dashboard.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new Dashboard().setVisible(true);
-            }
-        });
-    }
+    private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
+        tabPaneMain.setSelectedIndex(6);
+    }//GEN-LAST:event_jButton9ActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable Historique;
     private javax.swing.JTable HistoriqueDoc;
     private javax.swing.JTable MesDocuments;
     private javax.swing.JTable MesFavoris;
+    private javax.swing.JButton btnModifierMesDoc;
+    private javax.swing.JButton btnVoirmesDocs;
+    private javax.swing.JComboBox<String> cmbStatus;
     private javax.swing.JPanel container;
+    private javax.swing.JTextArea convGrp;
+    public javax.swing.JTextArea conversationMsg;
+    private javax.swing.JEditorPane docTxt;
     private javax.swing.JLabel icone1;
     private javax.swing.JLabel icone2;
     private javax.swing.JLabel icone3;
@@ -1250,15 +1599,15 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JLabel icone9;
     private javax.swing.JLabel icone_message1;
     private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton11;
+    private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton12;
-    private javax.swing.JButton jButton13;
     private javax.swing.JButton jButton14;
     private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton16;
     private javax.swing.JButton jButton17;
     private javax.swing.JButton jButton18;
     private javax.swing.JButton jButton19;
+    private javax.swing.JButton jButton2;
     private javax.swing.JButton jButton20;
     private javax.swing.JButton jButton21;
     private javax.swing.JButton jButton22;
@@ -1269,17 +1618,28 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JButton jButton5;
     private javax.swing.JButton jButton6;
     private javax.swing.JButton jButton7;
+    private javax.swing.JButton jButton8;
+    private javax.swing.JButton jButton9;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel14;
+    private javax.swing.JPanel jPanel15;
+    private javax.swing.JPanel jPanel16;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -1288,10 +1648,16 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane10;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JScrollPane jScrollPane8;
+    private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
@@ -1301,10 +1667,19 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JLabel lblAccueilIcone3;
     private javax.swing.JLabel lblMesDocIcone;
     private javax.swing.JLabel lblNomUtilisateur;
+    private javax.swing.JLabel lblTitreDoc;
     private javax.swing.JLabel lblUtilisateurImage;
     private javax.swing.JPanel main;
+    private javax.swing.JTextArea msgGrpTxt;
+    private javax.swing.JTextArea msgTxt;
     private javax.swing.JPanel nav;
+    private javax.swing.JPanel pnlPartage;
+    private java.awt.ScrollPane scrollPcontactes;
     private javax.swing.JPanel sideBar;
     private javax.swing.JTabbedPane tabPaneMain;
+    private javax.swing.JTextArea txtDesc;
+    private javax.swing.JTextField txtEmails;
+    private javax.swing.JTextField txtIntitule;
+    private javax.swing.JTextField txtTags;
     // End of variables declaration//GEN-END:variables
 }

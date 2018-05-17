@@ -1,7 +1,7 @@
 package fr.fileshare.dao;
 
-import fr.fileshare.models.Historique;
-import fr.fileshare.models.Document;
+import fr.fileshare.model.Historique;
+import fr.fileshare.model.Document;
 import java.util.ArrayList;
 import java.util.List;
 import org.hibernate.Query;
