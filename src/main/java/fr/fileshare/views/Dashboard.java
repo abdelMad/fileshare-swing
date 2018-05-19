@@ -851,7 +851,6 @@ public class Dashboard extends javax.swing.JFrame {
     jPanel16.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 330, 90));
 
     jPanel13.setBackground(new java.awt.Color(255, 255, 255));
-    jPanel13.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
     btnGras.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
     btnGras.setText("G");
@@ -860,7 +859,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnGrasActionPerformed(evt);
         }
     });
-    jPanel13.add(btnGras, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 38, 37));
 
     btnItalic.setFont(new java.awt.Font("Lucida Grande", 3, 13)); // NOI18N
     btnItalic.setText("I");
@@ -869,7 +867,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnItalicActionPerformed(evt);
         }
     });
-    jPanel13.add(btnItalic, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 0, 38, 37));
 
     btnSouligne.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
     btnSouligne.setText("S");
@@ -878,7 +875,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnSouligneActionPerformed(evt);
         }
     });
-    jPanel13.add(btnSouligne, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 0, 38, 37));
 
     cmbFonts.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Police", "Arial", "Courier", "Comic Sans MS", "Helvetica", "Open Sans", "Tahoma", "Verdana" }));
     cmbFonts.addActionListener(new java.awt.event.ActionListener() {
@@ -886,7 +882,6 @@ public class Dashboard extends javax.swing.JFrame {
             cmbFontsActionPerformed(evt);
         }
     });
-    jPanel13.add(cmbFonts, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 10, 130, 30));
 
     jButton12.setText("Couleur");
     jButton12.addActionListener(new java.awt.event.ActionListener() {
@@ -894,10 +889,8 @@ public class Dashboard extends javax.swing.JFrame {
             jButton12ActionPerformed(evt);
         }
     });
-    jPanel13.add(jButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, 80, -1));
 
     jlblColorViewer.setText("jLabel1");
-    jPanel13.add(jlblColorViewer, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 20, 20));
 
     btnAlignGauche.setText("gauche");
     btnAlignGauche.addActionListener(new java.awt.event.ActionListener() {
@@ -905,7 +898,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnAlignGaucheActionPerformed(evt);
         }
     });
-    jPanel13.add(btnAlignGauche, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 50, -1, -1));
 
     btnAlignSroit.setText("droit");
     btnAlignSroit.addActionListener(new java.awt.event.ActionListener() {
@@ -913,7 +905,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnAlignSroitActionPerformed(evt);
         }
     });
-    jPanel13.add(btnAlignSroit, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 50, -1, -1));
 
     btnAlignCentre.setText("center");
     btnAlignCentre.addActionListener(new java.awt.event.ActionListener() {
@@ -921,7 +912,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnAlignCentreActionPerformed(evt);
         }
     });
-    jPanel13.add(btnAlignCentre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 50, -1, -1));
 
     btnBarre.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
     btnBarre.setText("ST");
@@ -930,7 +920,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnBarreActionPerformed(evt);
         }
     });
-    jPanel13.add(btnBarre, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 0, 38, 37));
 
     btnRedo.setText("->");
     btnRedo.addActionListener(new java.awt.event.ActionListener() {
@@ -938,7 +927,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnRedoActionPerformed(evt);
         }
     });
-    jPanel13.add(btnRedo, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 80, 50, -1));
 
     btnUndo.setText("<-");
     btnUndo.addActionListener(new java.awt.event.ActionListener() {
@@ -946,7 +934,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnUndoActionPerformed(evt);
         }
     });
-    jPanel13.add(btnUndo, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 80, 50, -1));
 
     cmbTaille.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Taille", "Petit", "Normal", "Grande" }));
     cmbTaille.addActionListener(new java.awt.event.ActionListener() {
@@ -954,7 +941,67 @@ public class Dashboard extends javax.swing.JFrame {
             cmbTailleActionPerformed(evt);
         }
     });
-    jPanel13.add(cmbTaille, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 10, 120, -1));
+
+    javax.swing.GroupLayout jPanel13Layout = new javax.swing.GroupLayout(jPanel13);
+    jPanel13.setLayout(jPanel13Layout);
+    jPanel13Layout.setHorizontalGroup(
+        jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel13Layout.createSequentialGroup()
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel13Layout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addComponent(jlblColorViewer, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, 0)
+                    .addComponent(jButton12, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, 0)
+                    .addComponent(btnAlignGauche)
+                    .addGap(1, 1, 1)
+                    .addComponent(btnAlignSroit)
+                    .addGap(5, 5, 5)
+                    .addComponent(btnAlignCentre))
+                .addGroup(jPanel13Layout.createSequentialGroup()
+                    .addGap(60, 60, 60)
+                    .addComponent(btnUndo, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(10, 10, 10)
+                    .addComponent(btnRedo, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addGroup(jPanel13Layout.createSequentialGroup()
+            .addComponent(btnGras, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(2, 2, 2)
+            .addComponent(btnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(2, 2, 2)
+            .addComponent(btnSouligne, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(2, 2, 2)
+            .addComponent(btnBarre, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(cmbFonts, javax.swing.GroupLayout.PREFERRED_SIZE, 130, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cmbTaille, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+    );
+    jPanel13Layout.setVerticalGroup(
+        jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel13Layout.createSequentialGroup()
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(btnGras, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnItalic, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnSouligne, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnBarre, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbFonts, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmbTaille, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addGap(13, 13, 13)
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jlblColorViewer, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton12)
+                .addComponent(btnAlignGauche)
+                .addComponent(btnAlignSroit)
+                .addComponent(btnAlignCentre))
+            .addGap(1, 1, 1)
+            .addGroup(jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(btnUndo)
+                .addComponent(btnRedo)))
+    );
 
     jPanel16.add(jPanel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 430, 110));
 
@@ -978,10 +1025,7 @@ public class Dashboard extends javax.swing.JFrame {
 
     tabPaneMain.addTab("modif doc", jPanel15);
 
-    jPanel12.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
     jLabel7.setText("Titre du document");
-    jPanel12.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 60, -1, -1));
 
     cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Public", "Just moi", "Des utilisateurs" }));
     cmbStatus.addActionListener(new java.awt.event.ActionListener() {
@@ -989,24 +1033,16 @@ public class Dashboard extends javax.swing.JFrame {
             cmbStatusActionPerformed(evt);
         }
     });
-    jPanel12.add(cmbStatus, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 330, 219, 28));
-    jPanel12.add(txtIntitule, new org.netbeans.lib.awtextra.AbsoluteConstraints(356, 56, 219, 27));
 
     txtDesc.setColumns(20);
     txtDesc.setRows(5);
     jScrollPane10.setViewportView(txtDesc);
 
-    jPanel12.add(jScrollPane10, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 120, 270, 120));
-
     jLabel8.setText("Description");
-    jPanel12.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 130, -1, -1));
 
     jLabel11.setText("Tags");
-    jPanel12.add(jLabel11, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 270, -1, -1));
 
     jLabel12.setText("Qui peut voir ce fichier");
-    jPanel12.add(jLabel12, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 330, -1, -1));
-    jPanel12.add(txtTags, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 260, 219, 30));
 
     pnlPartage.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -1014,15 +1050,70 @@ public class Dashboard extends javax.swing.JFrame {
     pnlPartage.add(jLabel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 10, -1, -1));
     pnlPartage.add(txtEmails, new org.netbeans.lib.awtextra.AbsoluteConstraints(270, 30, 260, 50));
 
-    jPanel12.add(pnlPartage, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 380, 730, 90));
-
     jButton10.setText("Valider");
     jButton10.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             jButton10ActionPerformed(evt);
         }
     });
-    jPanel12.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 490, 79, 36));
+
+    javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
+    jPanel12.setLayout(jPanel12Layout);
+    jPanel12Layout.setHorizontalGroup(
+        jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel12Layout.createSequentialGroup()
+            .addGap(10, 10, 10)
+            .addComponent(pnlPartage, javax.swing.GroupLayout.PREFERRED_SIZE, 730, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addGroup(jPanel12Layout.createSequentialGroup()
+            .addGap(360, 360, 360)
+            .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 79, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addGroup(jPanel12Layout.createSequentialGroup()
+            .addGap(156, 156, 156)
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addComponent(jLabel7)
+                .addComponent(jLabel8)
+                .addComponent(jLabel12)
+                .addComponent(jLabel11))
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addGap(60, 60, 60)
+                    .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                        .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 219, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jScrollPane10, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                        .addComponent(txtTags)))
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel12Layout.createSequentialGroup()
+                    .addGap(56, 56, 56)
+                    .addComponent(txtIntitule, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE))))
+    );
+    jPanel12Layout.setVerticalGroup(
+        jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+        .addGroup(jPanel12Layout.createSequentialGroup()
+            .addGap(56, 56, 56)
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(txtIntitule, javax.swing.GroupLayout.PREFERRED_SIZE, 27, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel7))
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addGap(37, 37, 37)
+                    .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addGap(49, 49, 49)
+                    .addComponent(jLabel8)))
+            .addGap(20, 20, 20)
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel12Layout.createSequentialGroup()
+                    .addGap(10, 10, 10)
+                    .addComponent(jLabel11))
+                .addComponent(txtTags, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(40, 40, 40)
+            .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jLabel12)
+                .addComponent(cmbStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(22, 22, 22)
+            .addComponent(pnlPartage, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(20, 20, 20)
+            .addComponent(jButton10, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+    );
 
     tabPaneMain.addTab("tab5", jPanel12);
 
@@ -1771,6 +1862,9 @@ public class Dashboard extends javax.swing.JFrame {
     }//GEN-LAST:event_btnModifierMesDocActionPerformed
 
     public void __modifierDocument(int idSelectedDoc) {
+        HTMLEditorKit editorKit = new HTMLEditorKit();
+        document = (HTMLDocument) editorKit.createDefaultDocument();
+        docTxt.setDocument(document);
         URI uri = null;
         URI uriModifDoc = null;
         try {
@@ -1823,8 +1917,6 @@ public class Dashboard extends javax.swing.JFrame {
                         System.out.println("Messare received");
                         Map<String, String> doc = helper.decodeDoc(responseString);
                         //docTxt.setText(doc.get("txt"));
-                        HTMLEditorKit editorKit = new HTMLEditorKit();
-                        document = (HTMLDocument) editorKit.createDefaultDocument();
                         docTxt.setDocument(document);
                         Element[] roots = document.getRootElements();
                         Element body = null;
@@ -1864,26 +1956,25 @@ public class Dashboard extends javax.swing.JFrame {
             jButton11.setText("Retirer des favoris");
         }
         Document document = documentHandler.get(idSelectedDoc);
-        docTxt.setText(document.getDernierContenu());
-        HTMLEditorKit editorKit = new HTMLEditorKit();
-        this.document = (HTMLDocument) editorKit.createDefaultDocument();
+        System.out.println("Dernier contenu: "+document.getDernierContenu());
         Element[] roots = this.document.getRootElements();
         Element body = null;
         for (int i = 0; i < roots[0].getElementCount(); i++) {
             Element element = roots[0].getElement(i);
+            System.out.println(element.getName());
             if (element.getAttributes().getAttribute(StyleConstants.NameAttribute) == HTML.Tag.BODY) {
                 body = element;
                 break;
             }
         }
         System.out.println(body);
+        
         try {
             this.document.setInnerHTML(body, document.getDernierContenu());
         } catch (Exception e) {
             e.printStackTrace();
         }
-        //this.document = (HTMLDocument) editorKit.createDefaultDocument();
-        //docTxt.setDocument(this.document);
+       
         lblTitreDoc.setText(document.getIntitule());
         tabPaneMain.setSelectedIndex(4);
     }
@@ -2287,7 +2378,6 @@ public class Dashboard extends javax.swing.JFrame {
         if (tailles[index] != -1) {
             declancheAction = new JButton(new StyledEditorKit.FontSizeAction(String.valueOf(tailles[index]), tailles[index]));
             declancheAction.doClick();
-            System.out.println(tailles[index]);
             docTxt.requestFocus();
         }
     }//GEN-LAST:event_cmbTailleActionPerformed

@@ -159,6 +159,7 @@ public class Connexion extends javax.swing.JFrame {
 
         chbxRememberMe.setForeground(new java.awt.Color(255, 255, 255));
         chbxRememberMe.setText("Se rappeler de moi");
+        chbxRememberMe.setContentAreaFilled(false);
         jPanel3.add(chbxRememberMe, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 310, -1, -1));
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 420, 560));
