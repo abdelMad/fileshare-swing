@@ -7,6 +7,7 @@ package fr.fileshare.views;
 
 import fr.fileshare.dao.IUtilisateurHandler;
 import fr.fileshare.dao.UtilisateurHandler;
+import fr.fileshare.utilities.Util;
 
 /**
  *
@@ -19,6 +20,13 @@ public class Connexion extends javax.swing.JFrame {
      */
     public Connexion() {
         initComponents();
+        String utilisateur = Util.getProperty("uilisateur");
+        String mdp = Util.getProperty("mdp");
+        if(!mdp.equals("x") && !utilisateur.equals("x")){
+            emailTxt.setText(utilisateur);
+            mdpTxt.setText(mdp);
+            chbxRememberMe.setSelected(true);
+        }
     }
 
     /**
@@ -42,6 +50,7 @@ public class Connexion extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         btnConnexion = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        chbxRememberMe = new javax.swing.JCheckBox();
         jLabel5 = new javax.swing.JLabel();
         emailTxtInscription = new javax.swing.JTextField();
         jSeparator3 = new javax.swing.JSeparator();
@@ -77,7 +86,7 @@ public class Connexion extends javax.swing.JFrame {
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Mot de passe oublié?");
         jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
-        jPanel3.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 320, -1, -1));
+        jPanel3.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 360, -1, -1));
 
         emailTxt.setBackground(new java.awt.Color(67, 142, 185));
         emailTxt.setForeground(new java.awt.Color(255, 255, 255));
@@ -113,7 +122,7 @@ public class Connexion extends javax.swing.JFrame {
         btnConnexion.setText("Connexion");
         btnConnexion.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         btnConnexion.setBorderPainted(false);
-        btnConnexion.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnConnexion.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnConnexion.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnConnexionMouseClicked(evt);
@@ -140,13 +149,17 @@ public class Connexion extends javax.swing.JFrame {
                 .addComponent(btnConnexion, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE))
         );
 
-        jPanel3.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 380, 270, 40));
+        jPanel3.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 420, 270, 40));
 
         jLabel4.setBackground(new java.awt.Color(67, 142, 185));
         jLabel4.setFont(new java.awt.Font("Lucida Grande", 0, 18)); // NOI18N
         jLabel4.setForeground(new java.awt.Color(255, 255, 255));
         jLabel4.setText("Dèja Membre ?");
         jPanel3.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 20, 190, -1));
+
+        chbxRememberMe.setForeground(new java.awt.Color(255, 255, 255));
+        chbxRememberMe.setText("Se rappeler de moi");
+        jPanel3.add(chbxRememberMe, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 310, -1, -1));
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 420, 560));
 
@@ -213,7 +226,7 @@ public class Connexion extends javax.swing.JFrame {
         btnInscription.setText("Inscription");
         btnInscription.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         btnInscription.setBorderPainted(false);
-        btnInscription.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        btnInscription.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnInscription.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 btnInscriptionMouseClicked(evt);
@@ -301,6 +314,7 @@ public class Connexion extends javax.swing.JFrame {
     private javax.swing.JTextField PrenomTxt;
     private javax.swing.JButton btnConnexion;
     private javax.swing.JButton btnInscription;
+    private javax.swing.JCheckBox chbxRememberMe;
     private javax.swing.JTextField emailTxt;
     private javax.swing.JTextField emailTxtInscription;
     private javax.swing.JLabel jLabel1;

@@ -14,6 +14,8 @@ import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
 
 public class Util {
 
@@ -50,14 +52,24 @@ public class Util {
      * @param body    mail body
      * @return true if the email is sent successfully, if not return false.
      */
-    public static boolean sendEmail(String toEmail, String subject, String body) {
+        public static boolean sendEmail(String toEmail, String subject, String body) {
         try {
-            String smtpHostServer = "localhost";
-            Properties props = System.getProperties();
+            final String username = "no.replay.fileshare@gmail.com";
+            final String password = "FileShare2018";
 
-            props.put("mail.smtp.host", smtpHostServer);
+            Properties props = new Properties();
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.starttls.enable", "true");
+            props.put("mail.smtp.host", "smtp.gmail.com");
+            props.put("mail.smtp.port", "587");
 
-            javax.mail.Session session = javax.mail.Session.getInstance(props, null);
+//            javax.mail.Session session = javax.mail.Session.getInstance(props, null);
+            Session session = Session.getInstance(props,
+                    new javax.mail.Authenticator() {
+                        protected PasswordAuthentication getPasswordAuthentication() {
+                            return new PasswordAuthentication(username, password);
+                        }
+                    });
             MimeMessage msg = new MimeMessage(session);
             //set message headers
             msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
@@ -82,6 +94,7 @@ public class Util {
         }
         return false;
     }
+
 
 
     /**

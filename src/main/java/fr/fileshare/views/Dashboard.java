@@ -23,10 +23,12 @@ import fr.fileshare.utilities.JsonHelper;
 import fr.fileshare.websocket.ClientEndPointX;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.RenderingHints;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
@@ -42,15 +44,29 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.imageio.ImageIO;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JColorChooser;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.event.UndoableEditEvent;
+import javax.swing.event.UndoableEditListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.text.Element;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledEditorKit;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.undo.CannotRedoException;
+import javax.swing.undo.CannotUndoException;
+import javax.swing.undo.UndoManager;
 import org.json.JSONArray;
 
 /**
@@ -68,6 +84,20 @@ public class Dashboard extends javax.swing.JFrame {
     ClientEndPointX docWS;
     int idSelectedDoc = -1;
 
+    protected UndoableEditListener undoHandler = new UndoHandler();
+    protected UndoManager undo = new UndoManager();
+    private UndoAction undoAction = new UndoAction();
+    private RedoAction redoAction = new RedoAction();
+    private Action boldAction = new StyledEditorKit.BoldAction();
+    private Action underlineAction = new StyledEditorKit.UnderlineAction();
+    private Action italicAction = new StyledEditorKit.ItalicAction();
+    private Color currentColor;
+    String[] fontTypes = {"", "Arial", "Courier", "Comic Sans MS", "Helvetica", "Open Sans", "Tahoma", "Verdana"};
+    Integer[] tailles = {-1, 1, 3, 5};
+    JButton declancheAction = new JButton();
+    int keyPressed = -1;
+    private HTMLDocument document;
+
     /**
      * Creates new form Dashboard
      */
@@ -80,7 +110,12 @@ public class Dashboard extends javax.swing.JFrame {
         this.connexion.setVisible(false);
         initComponents();
         this.setVisible(true);
-        System.out.println("Im here");
+        this.icone1.setIcon(new ImageIcon(getClass().getResource("/images/mesdocuments.png")));
+        this.icone2.setIcon(new ImageIcon(getClass().getResource("/images/favoris.png")));
+        this.icone3.setIcon(new ImageIcon(getClass().getResource("/images/historique.png")));
+        this.icone4.setIcon(new ImageIcon(getClass().getResource("/images/nouveau.png")));
+        this.icone5.setIcon(new ImageIcon(getClass().getResource("/images/message.png")));
+        this.icone6.setIcon(new ImageIcon(getClass().getResource("/images/deconnexion.png")));
         this.lblNomUtilisateur.setText(UtilisateurHandler.utilisateur.getNom().toUpperCase());
         System.out.println(UtilisateurHandler.utilisateur.getImage());
         if (UtilisateurHandler.utilisateur.getImage() == null || UtilisateurHandler.utilisateur.getImage().length() == 0) {
@@ -90,25 +125,44 @@ public class Dashboard extends javax.swing.JFrame {
 
                 URL url = new URL(Util.getProperty("host") + UtilisateurHandler.utilisateur.getImage());
                 Image image = ImageIO.read(url);
-                BufferedImage resizedImg = new BufferedImage(70, 70, BufferedImage.TYPE_INT_ARGB);
+                BufferedImage resizedImg = new BufferedImage(90, 90, BufferedImage.TYPE_INT_ARGB);
                 Graphics2D g2 = resizedImg.createGraphics();
 
                 g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-                g2.drawImage(image, 0, 0, 70, 70, null);
+                g2.drawImage(image, 0, 0, 90, 90, null);
                 g2.dispose();
                 this.lblUtilisateurImage.setIcon(new ImageIcon(resizedImg));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-        this.icone1.setIcon(new ImageIcon(getClass().getResource("/images/mesdocuments.png")));
-        this.icone2.setIcon(new ImageIcon(getClass().getResource("/images/favoris.png")));
-        this.icone3.setIcon(new ImageIcon(getClass().getResource("/images/historique.png")));
-        this.icone4.setIcon(new ImageIcon(getClass().getResource("/images/nouveau.png")));
-        this.icone5.setIcon(new ImageIcon(getClass().getResource("/images/message.png")));
-        this.icone6.setIcon(new ImageIcon(getClass().getResource("/images/deconnexion.png")));
+
         loadMesDocuments();
         pnlPartage.setVisible(false);
+        final boolean showTabsHeader = false;
+
+        tabPaneMain.setUI(new javax.swing.plaf.metal.MetalTabbedPaneUI() {
+            @Override
+            protected int calculateTabAreaHeight(int tabPlacement, int horizRunCount, int maxTabHeight) {
+                if (showTabsHeader) {
+                    return super.calculateTabAreaHeight(tabPlacement, horizRunCount, maxTabHeight);
+                } else {
+                    return 0;
+                }
+            }
+
+            protected void paintTabArea(Graphics g, int tabPlacement, int selectedIndex) {
+            }
+        });
+
+        declancheAction.setAction(new StyledEditorKit.FontFamilyAction(fontTypes[0], fontTypes[0]));
+        declancheAction.doClick();
+        jlblColorViewer.setIcon(jlabelIcon(Color.BLACK));
+        HTMLEditorKit editorKit = new HTMLEditorKit();
+        document = (HTMLDocument) editorKit.createDefaultDocument();
+        docTxt.setDocument(document);
+        document.addUndoableEditListener(undoHandler);
+
     }
 
     /**
@@ -164,11 +218,11 @@ public class Dashboard extends javax.swing.JFrame {
         jScrollPane3 = new javax.swing.JScrollPane();
         MesDocuments = new javax.swing.JTable();
         btnVoirmesDocs = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
         btnTelechargerDoc = new javax.swing.JButton();
         btnModifierMesDoc = new javax.swing.JButton();
         jButton14 = new javax.swing.JButton();
         btnVoirmesDocs1 = new javax.swing.JButton();
+        btnVoirUtilisateurs = new javax.swing.JButton();
         jPanel10 = new javax.swing.JPanel();
         jScrollPane5 = new javax.swing.JScrollPane();
         Historique = new javax.swing.JTable();
@@ -180,7 +234,6 @@ public class Dashboard extends javax.swing.JFrame {
         HistoriqueDoc = new javax.swing.JTable();
         jButton24 = new javax.swing.JButton();
         jButton25 = new javax.swing.JButton();
-        jLabel6 = new javax.swing.JLabel();
         jPanel14 = new javax.swing.JPanel();
         scrollPcontactes = new java.awt.ScrollPane();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -199,13 +252,24 @@ public class Dashboard extends javax.swing.JFrame {
         jPanel16 = new javax.swing.JPanel();
         jScrollPane9 = new javax.swing.JScrollPane();
         docTxt = new javax.swing.JEditorPane();
-        jToggleButton1 = new javax.swing.JToggleButton();
-        jToggleButton2 = new javax.swing.JToggleButton();
-        jToggleButton3 = new javax.swing.JToggleButton();
         jScrollPane11 = new javax.swing.JScrollPane();
         jPanel17 = new javax.swing.JPanel();
         jLblInfoNbEditeurs = new javax.swing.JLabel();
         jLblEdtiteurs = new javax.swing.JLabel();
+        jPanel13 = new javax.swing.JPanel();
+        btnGras = new javax.swing.JButton();
+        btnItalic = new javax.swing.JButton();
+        btnSouligne = new javax.swing.JButton();
+        cmbFonts = new javax.swing.JComboBox<>();
+        jButton12 = new javax.swing.JButton();
+        jlblColorViewer = new javax.swing.JLabel();
+        btnAlignGauche = new javax.swing.JButton();
+        btnAlignSroit = new javax.swing.JButton();
+        btnAlignCentre = new javax.swing.JButton();
+        btnBarre = new javax.swing.JButton();
+        btnRedo = new javax.swing.JButton();
+        btnUndo = new javax.swing.JButton();
+        cmbTaille = new javax.swing.JComboBox<>();
         jButton9 = new javax.swing.JButton();
         jButton11 = new javax.swing.JButton();
         jPanel12 = new javax.swing.JPanel();
@@ -225,12 +289,12 @@ public class Dashboard extends javax.swing.JFrame {
         jPanel9 = new javax.swing.JPanel();
         jScrollPane4 = new javax.swing.JScrollPane();
         MesFavoris = new javax.swing.JTable();
-        jLabel4 = new javax.swing.JLabel();
         jButton15 = new javax.swing.JButton();
         jButton16 = new javax.swing.JButton();
         jButton17 = new javax.swing.JButton();
         jbtnSupprimerDocModifierDoc = new javax.swing.JButton();
         jButton19 = new javax.swing.JButton();
+        btnVoirUtilisateurs1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -252,14 +316,14 @@ public class Dashboard extends javax.swing.JFrame {
         lblNomUtilisateur.setForeground(new java.awt.Color(255, 255, 255));
         lblNomUtilisateur.setText("nom utilisateur");
         lblNomUtilisateur.setToolTipText("");
-        jPanel2.add(lblNomUtilisateur, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 20, -1, 20));
-        jPanel2.add(lblUtilisateurImage, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 70, 70));
+        jPanel2.add(lblNomUtilisateur, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 20, -1, 20));
+        jPanel2.add(lblUtilisateurImage, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 90, 90));
 
         jLabel10.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
         jLabel10.setForeground(new java.awt.Color(255, 255, 255));
         jLabel10.setText("Bienvenue");
         jLabel10.setToolTipText("");
-        jPanel2.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(78, 9, 70, 40));
+        jPanel2.add(jLabel10, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 10, 70, 40));
 
         nav.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(610, 0, 390, 90));
 
@@ -268,7 +332,7 @@ public class Dashboard extends javax.swing.JFrame {
         jLabel9.setText("File Share");
         nav.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
 
-        container.add(nav, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1000, 50));
+        container.add(nav, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1000, 90));
 
         sideBar.setBackground(new java.awt.Color(242, 242, 242));
         sideBar.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -418,17 +482,26 @@ public class Dashboard extends javax.swing.JFrame {
         main.setBackground(new java.awt.Color(255, 255, 255));
         main.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        tabPaneMain.setEnabled(false);
+        tabPaneMain.setFocusTraversalKeysEnabled(false);
+        tabPaneMain.setFocusable(false);
+        tabPaneMain.setRequestFocusEnabled(false);
+        tabPaneMain.setVerifyInputWhenFocusTarget(false);
+
         MesDocuments.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Id_auteur", "Intitulé", "Date de publication", "Dernière modification", "Tags", "Dernier éditeur", "Statut", "Id_doc"
+                "Id_auteur", "Intitulé", "Date de publication", "Dernière modification", "Tags", "Dernier éditeur", "Statut", "Id_doc","id_utilisateurs"
             }
         )
         {public boolean isCellEditable(int row, int column){return false;}}
     );
     MesDocuments.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseReleased(java.awt.event.MouseEvent evt) {
+            MesDocumentsMouseReleased(evt);
+        }
         public void mouseClicked(java.awt.event.MouseEvent evt) {
             MesDocumentsMouseClicked(evt);
         }
@@ -441,9 +514,6 @@ public class Dashboard extends javax.swing.JFrame {
             btnVoirmesDocsActionPerformed(evt);
         }
     });
-
-    jLabel3.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel3.setText("                                 Action");
 
     btnTelechargerDoc.setText("Télécharger");
     btnTelechargerDoc.addActionListener(new java.awt.event.ActionListener() {
@@ -473,6 +543,13 @@ public class Dashboard extends javax.swing.JFrame {
         }
     });
 
+    btnVoirUtilisateurs.setText("Voir les utilisateurs");
+    btnVoirUtilisateurs.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnVoirUtilisateursActionPerformed(evt);
+        }
+    });
+
     javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
     jPanel8.setLayout(jPanel8Layout);
     jPanel8Layout.setHorizontalGroup(
@@ -489,18 +566,18 @@ public class Dashboard extends javax.swing.JFrame {
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jLabel1))
                 .addGroup(jPanel8Layout.createSequentialGroup()
-                    .addGap(126, 126, 126)
-                    .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(btnTelechargerDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnVoirmesDocs, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(18, 18, 18)
+                    .addGap(67, 67, 67)
                     .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(btnVoirmesDocs1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(btnVoirmesDocs, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnTelechargerDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGap(58, 58, 58)
+                    .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnVoirmesDocs1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addGroup(jPanel8Layout.createSequentialGroup()
-                    .addGap(211, 211, 211)
-                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGap(240, 240, 240)
+                    .addComponent(btnVoirUtilisateurs)))
+            .addContainerGap(21, Short.MAX_VALUE))
     );
     jPanel8Layout.setVerticalGroup(
         jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -512,17 +589,17 @@ public class Dashboard extends javax.swing.JFrame {
                 .addGroup(jPanel8Layout.createSequentialGroup()
                     .addContainerGap()
                     .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(18, 18, 18)
+            .addGap(27, 27, 27)
             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(btnVoirmesDocs, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(18, 18, 18)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(btnTelechargerDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(btnVoirmesDocs1, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(35, 35, 35)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(btnVoirUtilisateurs, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(58, 58, 58)
             .addComponent(jButton14, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
@@ -572,19 +649,15 @@ public class Dashboard extends javax.swing.JFrame {
     jPanel10Layout.setHorizontalGroup(
         jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel10Layout.createSequentialGroup()
-            .addContainerGap(274, Short.MAX_VALUE)
-            .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                    .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGap(237, 237, 237))
-                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
-                    .addComponent(jButton22, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(245, 245, 245))))
-        .addGroup(jPanel10Layout.createSequentialGroup()
             .addComponent(jScrollPane5)
             .addContainerGap())
+        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
+            .addContainerGap(282, Short.MAX_VALUE)
+            .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jButton22, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(237, 237, 237))
     );
     jPanel10Layout.setVerticalGroup(
         jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -597,7 +670,7 @@ public class Dashboard extends javax.swing.JFrame {
             .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
             .addComponent(jButton22, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(15, Short.MAX_VALUE))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     tabPaneMain.addTab("tab3", jPanel10);
@@ -633,21 +706,17 @@ public class Dashboard extends javax.swing.JFrame {
         }
     });
 
-    jLabel6.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel6.setText("                                 Action");
-
     javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
     jPanel11.setLayout(jPanel11Layout);
     jPanel11Layout.setHorizontalGroup(
         jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addContainerGap(27, Short.MAX_VALUE)
             .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 716, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addContainerGap())
         .addGroup(jPanel11Layout.createSequentialGroup()
             .addGap(251, 251, 251)
             .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton25, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton24, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGap(236, 236, 236))
@@ -657,13 +726,11 @@ public class Dashboard extends javax.swing.JFrame {
         .addGroup(jPanel11Layout.createSequentialGroup()
             .addContainerGap()
             .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(18, 18, 18)
-            .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 34, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
             .addComponent(jButton25, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton24, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGap(38, 38, 38))
     );
 
     tabPaneMain.addTab("tab4", jPanel11);
@@ -701,24 +768,22 @@ public class Dashboard extends javax.swing.JFrame {
                     .addComponent(jButton2))
                 .addComponent(jScrollPane2))
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(scrollPcontactes, javax.swing.GroupLayout.PREFERRED_SIZE, 199, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(23, 23, 23))
+            .addComponent(scrollPcontactes, javax.swing.GroupLayout.PREFERRED_SIZE, 204, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(18, 18, 18))
     );
     jPanel14Layout.setVerticalGroup(
         jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel14Layout.createSequentialGroup()
             .addContainerGap()
-            .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addComponent(scrollPcontactes, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel14Layout.createSequentialGroup()
                     .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 465, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                     .addGroup(jPanel14Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGroup(jPanel14Layout.createSequentialGroup()
-                    .addComponent(scrollPcontactes, javax.swing.GroupLayout.PREFERRED_SIZE, 547, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 7, Short.MAX_VALUE))))
+                        .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE))))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     tabPaneMain.addTab("messages", jPanel14);
@@ -762,39 +827,136 @@ public class Dashboard extends javax.swing.JFrame {
     jPanel16.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
     docTxt.setContentType("text/html"); // NOI18N
+    docTxt.setText("");
     docTxt.addKeyListener(new java.awt.event.KeyAdapter() {
+        public void keyPressed(java.awt.event.KeyEvent evt) {
+            docTxtKeyPressed(evt);
+        }
         public void keyReleased(java.awt.event.KeyEvent evt) {
             docTxtKeyReleased(evt);
         }
     });
     jScrollPane9.setViewportView(docTxt);
 
-    jPanel16.add(jScrollPane9, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 158, 425, 310));
-
-    jToggleButton1.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-    jToggleButton1.setText("S");
-    jPanel16.add(jToggleButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 120, 30, -1));
-
-    jToggleButton2.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
-    jToggleButton2.setText("G");
-    jPanel16.add(jToggleButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 120, 30, -1));
-
-    jToggleButton3.setFont(new java.awt.Font("Lucida Sans", 3, 13)); // NOI18N
-    jToggleButton3.setText("I");
-    jPanel16.add(jToggleButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 120, 30, -1));
+    jPanel16.add(jScrollPane9, new org.netbeans.lib.awtextra.AbsoluteConstraints(1, 218, 430, 250));
 
     jPanel17.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
-
-    jLblInfoNbEditeurs.setText("Actuellement 1 éditeur en ligne");
     jPanel17.add(jLblInfoNbEditeurs, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, -1, -1));
 
     jLblEdtiteurs.setForeground(new java.awt.Color(51, 102, 0));
-    jLblEdtiteurs.setText("jLabel16");
     jPanel17.add(jLblEdtiteurs, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, -1, -1));
 
     jScrollPane11.setViewportView(jPanel17);
 
-    jPanel16.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 330, 90));
+    jPanel16.add(jScrollPane11, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 0, 330, 90));
+
+    jPanel13.setBackground(new java.awt.Color(255, 255, 255));
+    jPanel13.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
+
+    btnGras.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+    btnGras.setText("G");
+    btnGras.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnGrasActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnGras, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 38, 37));
+
+    btnItalic.setFont(new java.awt.Font("Lucida Grande", 3, 13)); // NOI18N
+    btnItalic.setText("I");
+    btnItalic.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnItalicActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnItalic, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 0, 38, 37));
+
+    btnSouligne.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+    btnSouligne.setText("S");
+    btnSouligne.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnSouligneActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnSouligne, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 0, 38, 37));
+
+    cmbFonts.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Police", "Arial", "Courier", "Comic Sans MS", "Helvetica", "Open Sans", "Tahoma", "Verdana" }));
+    cmbFonts.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            cmbFontsActionPerformed(evt);
+        }
+    });
+    jPanel13.add(cmbFonts, new org.netbeans.lib.awtextra.AbsoluteConstraints(160, 10, 130, 30));
+
+    jButton12.setText("Couleur");
+    jButton12.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton12ActionPerformed(evt);
+        }
+    });
+    jPanel13.add(jButton12, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, 80, -1));
+
+    jlblColorViewer.setText("jLabel1");
+    jPanel13.add(jlblColorViewer, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 20, 20));
+
+    btnAlignGauche.setText("gauche");
+    btnAlignGauche.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnAlignGaucheActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnAlignGauche, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 50, -1, -1));
+
+    btnAlignSroit.setText("droit");
+    btnAlignSroit.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnAlignSroitActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnAlignSroit, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 50, -1, -1));
+
+    btnAlignCentre.setText("center");
+    btnAlignCentre.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnAlignCentreActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnAlignCentre, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 50, -1, -1));
+
+    btnBarre.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+    btnBarre.setText("ST");
+    btnBarre.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnBarreActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnBarre, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 0, 38, 37));
+
+    btnRedo.setText("->");
+    btnRedo.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnRedoActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnRedo, new org.netbeans.lib.awtextra.AbsoluteConstraints(120, 80, 50, -1));
+
+    btnUndo.setText("<-");
+    btnUndo.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnUndoActionPerformed(evt);
+        }
+    });
+    jPanel13.add(btnUndo, new org.netbeans.lib.awtextra.AbsoluteConstraints(60, 80, 50, -1));
+
+    cmbTaille.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Taille", "Petit", "Normal", "Grande" }));
+    cmbTaille.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            cmbTailleActionPerformed(evt);
+        }
+    });
+    jPanel13.add(cmbTaille, new org.netbeans.lib.awtextra.AbsoluteConstraints(300, 10, 120, -1));
+
+    jPanel16.add(jPanel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 430, 110));
 
     jPanel15.add(jPanel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 80, -1, -1));
 
@@ -860,7 +1022,7 @@ public class Dashboard extends javax.swing.JFrame {
             jButton10ActionPerformed(evt);
         }
     });
-    jPanel12.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 520, 79, 36));
+    jPanel12.add(jButton10, new org.netbeans.lib.awtextra.AbsoluteConstraints(360, 490, 79, 36));
 
     tabPaneMain.addTab("tab5", jPanel12);
 
@@ -869,20 +1031,20 @@ public class Dashboard extends javax.swing.JFrame {
 
         },
         new String [] {
-            "Id_auteur", "Intitulé", "Date de publication", "Dernière modification", "Tags", "Dernier éditeur", "Statut", "Id_doc"
+            "Id_auteur", "Intitulé", "Date de publication", "Dernière modification", "Tags", "Dernier éditeur", "Statut", "Id_doc","id_utilisateurs"
         }
     )
     {public boolean isCellEditable(int row, int column){return false;}}
     );
     MesFavoris.addMouseListener(new java.awt.event.MouseAdapter() {
+        public void mouseReleased(java.awt.event.MouseEvent evt) {
+            MesFavorisMouseReleased(evt);
+        }
         public void mouseClicked(java.awt.event.MouseEvent evt) {
             MesFavorisMouseClicked(evt);
         }
     });
     jScrollPane4.setViewportView(MesFavoris);
-
-    jLabel4.setBackground(new java.awt.Color(255, 0, 102));
-    jLabel4.setText("                                 Action");
 
     jButton15.setText("Voir Document");
     jButton15.addActionListener(new java.awt.event.ActionListener() {
@@ -919,37 +1081,45 @@ public class Dashboard extends javax.swing.JFrame {
         }
     });
 
+    btnVoirUtilisateurs1.setText("Voir les utilisateurs");
+    btnVoirUtilisateurs1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnVoirUtilisateurs1ActionPerformed(evt);
+        }
+    });
+
     javax.swing.GroupLayout jPanel9Layout = new javax.swing.GroupLayout(jPanel9);
     jPanel9.setLayout(jPanel9Layout);
     jPanel9Layout.setHorizontalGroup(
         jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel9Layout.createSequentialGroup()
-            .addGap(7, 7, 7)
-            .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 716, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addGroup(jPanel9Layout.createSequentialGroup()
-            .addGap(210, 210, 210)
-            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addGroup(jPanel9Layout.createSequentialGroup()
-            .addGap(90, 90, 90)
-            .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(40, 40, 40)
-            .addComponent(jButton17, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addGroup(jPanel9Layout.createSequentialGroup()
-            .addGap(90, 90, 90)
-            .addComponent(jButton16, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(40, 40, 40)
-            .addComponent(jbtnSupprimerDocModifierDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addGroup(jPanel9Layout.createSequentialGroup()
-            .addGap(276, 276, 276)
-            .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addGap(7, 7, 7)
+                    .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 716, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addGap(90, 90, 90)
+                    .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(40, 40, 40)
+                    .addComponent(jButton17, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addGap(90, 90, 90)
+                    .addComponent(jButton16, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(40, 40, 40)
+                    .addComponent(jbtnSupprimerDocModifierDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addGap(276, 276, 276)
+                    .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel9Layout.createSequentialGroup()
+                    .addGap(257, 257, 257)
+                    .addComponent(btnVoirUtilisateurs1)))
+            .addGap(26, 26, 26))
     );
     jPanel9Layout.setVerticalGroup(
         jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel9Layout.createSequentialGroup()
             .addGap(6, 6, 6)
             .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addGap(6, 6, 6)
-            .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addGap(18, 18, 18)
             .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(jButton15, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -958,13 +1128,15 @@ public class Dashboard extends javax.swing.JFrame {
             .addGroup(jPanel9Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jButton16, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jbtnSupprimerDocModifierDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(67, 67, 67)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(btnVoirUtilisateurs1, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(46, 46, 46)
             .addComponent(jButton19, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE))
     );
 
     tabPaneMain.addTab("tab2", jPanel9);
 
-    main.add(tabPaneMain, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 0, 770, 610));
+    main.add(tabPaneMain, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 30, 770, 600));
 
     container.add(main, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 60, 800, 620));
 
@@ -1092,7 +1264,7 @@ public class Dashboard extends javax.swing.JFrame {
         /* Supprimer les données du JTable avant chaque remplissage */
         model.setRowCount(0);
 
-        Object rowData[] = new Object[8];
+        Object rowData[] = new Object[9];
 
         /* Cacher les colonne id_documents et id_auteur */
         MesFavoris.getColumnModel().getColumn(0).setMinWidth(0);
@@ -1101,6 +1273,9 @@ public class Dashboard extends javax.swing.JFrame {
         MesFavoris.getColumnModel().getColumn(7).setMinWidth(0);
         MesFavoris.getColumnModel().getColumn(7).setMaxWidth(0);
         MesFavoris.getColumnModel().getColumn(7).setWidth(0);
+        MesFavoris.getColumnModel().getColumn(8).setMinWidth(0);
+        MesFavoris.getColumnModel().getColumn(8).setMaxWidth(0);
+        MesFavoris.getColumnModel().getColumn(8).setWidth(0);
 
         for (int i = 0; i < documents.size(); i++) {
             rowData[0] = documents.get(i).getAuteur().getId();
@@ -1110,23 +1285,31 @@ public class Dashboard extends javax.swing.JFrame {
             rowData[4] = documents.get(i).getTag();
             rowData[5] = documents.get(i).getDernierEditeur().getNom();
             switch (documents.get(i).getStatus()) {
-                case 0:
+                case Document.PUBLIC:
                     rowData[6] = "Public";
+                    rowData[8] = "";
                     break;
-                case 1:
+                case Document.PRIVE:
                     rowData[6] = "Privé";
+                    rowData[8] = "";
                     break;
-                case 2:
+                case Document.PARTAGE:
                     Set<Utilisateur> user = documents.get(i).getUtilisateursAvecDroit();
                     String partager_avec = "Partagé avec ";
+                    String idUtilisateurs = "";
+                    int cpt = 0;
                     for (Utilisateur utilisateur : user) {
                         if (utilisateur.getId() == UtilisateurHandler.utilisateur.getId()) {
                             partager_avec += "moi ";
                         } else {
                             partager_avec += utilisateur.getNom() + " ";
+                            idUtilisateurs += (cpt > 0 ? "|" : "") + utilisateur.getId();
+
                         }
+                        cpt++;
                     }
                     rowData[6] = partager_avec;
+                    rowData[8] = idUtilisateurs;
                     break;
                 default:
                     break;
@@ -1160,15 +1343,18 @@ public class Dashboard extends javax.swing.JFrame {
         /* Supprimer les données du JTable avant chaque remplissage */
         model.setRowCount(0);
 
-        Object rowData[] = new Object[8];
+        Object rowData[] = new Object[9];
 
-        /* Cacher les colonne id_documents et id_auteur */
+        /* Cacher les colonne id_documents et id_auteur  et id_utilisateurs*/
         MesDocuments.getColumnModel().getColumn(0).setMinWidth(0);
         MesDocuments.getColumnModel().getColumn(0).setMaxWidth(0);
         MesDocuments.getColumnModel().getColumn(0).setWidth(0);
         MesDocuments.getColumnModel().getColumn(7).setMinWidth(0);
         MesDocuments.getColumnModel().getColumn(7).setMaxWidth(0);
         MesDocuments.getColumnModel().getColumn(7).setWidth(0);
+        MesDocuments.getColumnModel().getColumn(8).setMinWidth(0);
+        MesDocuments.getColumnModel().getColumn(8).setMaxWidth(0);
+        MesDocuments.getColumnModel().getColumn(8).setWidth(0);
 
         for (int i = 0; i < documents.size(); i++) {
             rowData[0] = documents.get(i).getAuteur().getId();
@@ -1180,21 +1366,28 @@ public class Dashboard extends javax.swing.JFrame {
             switch (documents.get(i).getStatus()) {
                 case 0:
                     rowData[6] = "Public";
+                    rowData[8] = "";
                     break;
                 case 1:
                     rowData[6] = "Privé";
+                    rowData[8] = "";
                     break;
                 case 2:
                     Set<Utilisateur> user = documents.get(i).getUtilisateursAvecDroit();
                     String partager_avec = "Partagé avec ";
+                    String idUtilisateurs = "";
+                    int cpt = 0;
                     for (Utilisateur utilisateur : user) {
                         if (utilisateur.getId() == UtilisateurHandler.utilisateur.getId()) {
                             partager_avec += "moi ";
                         } else {
                             partager_avec += utilisateur.getNom() + " ";
+                            idUtilisateurs += (cpt > 0 ? "|" : "") + utilisateur.getId();
                         }
+                        cpt++;
                     }
                     rowData[6] = partager_avec;
+                    rowData[8] = idUtilisateurs;
                     break;
                 default:
                     break;
@@ -1226,10 +1419,8 @@ public class Dashboard extends javax.swing.JFrame {
                     conversation += "\n" + msg.get("sender") + " : " + msg.get("message") + "\n";
                     Dashboard.this.conversationMsg.setText(conversation);
                 } catch (Exception e) {
-
+                    e.printStackTrace();
                 }
-
-                //System.out.println(responseString);
             });
         } catch (Exception e) {
             e.printStackTrace();
@@ -1322,7 +1513,7 @@ public class Dashboard extends javax.swing.JFrame {
             VoirDocument voirDocument = new VoirDocument(doc);
             System.out.println("ID de la version du document à consulter : " + Integer.parseInt(model.getValueAt(i, 4).toString()));
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton25ActionPerformed
 
@@ -1357,7 +1548,7 @@ public class Dashboard extends javax.swing.JFrame {
                 }
             }
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton24ActionPerformed
 
@@ -1403,7 +1594,7 @@ public class Dashboard extends javax.swing.JFrame {
                 model1.addRow(rowData);
             }
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
 
     }//GEN-LAST:event_jButton22ActionPerformed
@@ -1421,7 +1612,7 @@ public class Dashboard extends javax.swing.JFrame {
             __modifierDocument(idSelectedDoc);
             System.out.println("ID du document à modifier : " + Integer.parseInt(model.getValueAt(i, 7).toString()));
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton21ActionPerformed
 
@@ -1433,13 +1624,12 @@ public class Dashboard extends javax.swing.JFrame {
         int i = Historique.getSelectedRow();
 
         if (i >= 0) {
-            System.out.println("ID du document à consulter : " + idSelectedDoc);
             //voir document historique
             IDocumentHandler documentHandler = new DocumentHandler();
             Document doc = documentHandler.get(Integer.parseInt(model.getValueAt(i, 7).toString()));
             VoirDocument voirDocument = new VoirDocument(doc);
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton20ActionPerformed
 
@@ -1465,7 +1655,7 @@ public class Dashboard extends javax.swing.JFrame {
                 }
             }
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton19ActionPerformed
 
@@ -1485,7 +1675,7 @@ public class Dashboard extends javax.swing.JFrame {
                 }
             }
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jbtnSupprimerDocModifierDocActionPerformed
 
@@ -1500,21 +1690,24 @@ public class Dashboard extends javax.swing.JFrame {
             idSelectedDoc = Integer.parseInt(model.getValueAt(i, 7).toString());
             __modifierDocument(idSelectedDoc);
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton17ActionPerformed
-
+    private Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
+    private Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
     private void jButton16ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton16ActionPerformed
-        // TODO add your handling code here:
         /* Téléchargement Document Favoris */
+
         int i = MesFavoris.getSelectedRow();
         DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
-
         if (i >= 0) {
+
             idSelectedDoc = Integer.parseInt(model.getValueAt(i, 7).toString());
             __telechargerDoc(idSelectedDoc);
+            this.setCursor(defaultCursor);
+
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton16ActionPerformed
 
@@ -1530,7 +1723,7 @@ public class Dashboard extends javax.swing.JFrame {
             Document doc = documentHandler.get(Integer.parseInt(model.getValueAt(i, 7).toString()));
             VoirDocument voirDocument = new VoirDocument(doc);
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton15ActionPerformed
 
@@ -1557,7 +1750,7 @@ public class Dashboard extends javax.swing.JFrame {
                 }
             }
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_jButton14ActionPerformed
 
@@ -1573,7 +1766,7 @@ public class Dashboard extends javax.swing.JFrame {
             __modifierDocument(idSelectedDoc);
 
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_btnModifierMesDocActionPerformed
 
@@ -1629,7 +1822,21 @@ public class Dashboard extends javax.swing.JFrame {
                     } else {
                         System.out.println("Messare received");
                         Map<String, String> doc = helper.decodeDoc(responseString);
-                        docTxt.setText(doc.get("txt"));
+                        //docTxt.setText(doc.get("txt"));
+                        HTMLEditorKit editorKit = new HTMLEditorKit();
+                        document = (HTMLDocument) editorKit.createDefaultDocument();
+                        docTxt.setDocument(document);
+                        Element[] roots = document.getRootElements();
+                        Element body = null;
+                        for (int i = 0; i < roots[0].getElementCount(); i++) {
+                            Element element = roots[0].getElement(i);
+                            if (element.getAttributes().getAttribute(StyleConstants.NameAttribute) == HTML.Tag.BODY) {
+                                body = element;
+                                break;
+                            }
+                        }
+                        System.out.println(body);
+                        document.setInnerHTML(body, doc.get("txt"));
                     }
                 } catch (Exception e) {
 
@@ -1658,6 +1865,25 @@ public class Dashboard extends javax.swing.JFrame {
         }
         Document document = documentHandler.get(idSelectedDoc);
         docTxt.setText(document.getDernierContenu());
+        HTMLEditorKit editorKit = new HTMLEditorKit();
+        this.document = (HTMLDocument) editorKit.createDefaultDocument();
+        Element[] roots = this.document.getRootElements();
+        Element body = null;
+        for (int i = 0; i < roots[0].getElementCount(); i++) {
+            Element element = roots[0].getElement(i);
+            if (element.getAttributes().getAttribute(StyleConstants.NameAttribute) == HTML.Tag.BODY) {
+                body = element;
+                break;
+            }
+        }
+        System.out.println(body);
+        try {
+            this.document.setInnerHTML(body, document.getDernierContenu());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        //this.document = (HTMLDocument) editorKit.createDefaultDocument();
+        //docTxt.setDocument(this.document);
         lblTitreDoc.setText(document.getIntitule());
         tabPaneMain.setSelectedIndex(4);
     }
@@ -1680,13 +1906,12 @@ public class Dashboard extends javax.swing.JFrame {
         fc.setDialogTitle("Téléchargement Document");
         fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         if (fc.showOpenDialog(btnTelechargerDoc) == JFileChooser.APPROVE_OPTION) {
-            this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+            this.setCursor(waitCursor);
             btnTelechargerDoc.setCursor(new Cursor(Cursor.WAIT_CURSOR));
             System.out.println("Emplacement choisi : " + fc.getSelectedFile().getAbsolutePath());
             IDocumentHandler documentHandler = new DocumentHandler();
             Document document = documentHandler.get(idSelectedDoc);
             documentHandler.telechargerDoc(document, fc.getSelectedFile().getAbsolutePath());
-            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         }
     }
     private void btnVoirmesDocsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirmesDocsActionPerformed
@@ -1700,7 +1925,7 @@ public class Dashboard extends javax.swing.JFrame {
             Document doc = documentHandler.get(Integer.parseInt(model.getValueAt(i, 7).toString()));
             VoirDocument voirDocument = new VoirDocument(doc);
         } else {
-            System.out.println("Aucun Document n'a été selectionné !");
+            MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
     }//GEN-LAST:event_btnVoirmesDocsActionPerformed
 
@@ -1729,7 +1954,6 @@ public class Dashboard extends javax.swing.JFrame {
             convGrp.setForeground(Color.red);
             convGrp.setText(convGrp.getText() + "moi : " + txt);
             msgGrpTxt.setText("");
-            System.out.println("Hey hey hey");
         }
     }//GEN-LAST:event_jButton8ActionPerformed
 
@@ -1829,8 +2053,9 @@ public class Dashboard extends javax.swing.JFrame {
                     }
                 }
                 doc.setUtilisateursAvecDroit(utilisateurs_autorises);
-            }else
+            } else {
                 doc.setUtilisateursAvecDroit(new HashSet<Utilisateur>());
+            }
             if (idSelectedDoc == -1) {
                 if (documentHandler.add(doc)) {
                     idSelectedDoc = doc.getId();
@@ -1847,19 +2072,6 @@ public class Dashboard extends javax.swing.JFrame {
 
 
     }//GEN-LAST:event_jButton10ActionPerformed
-
-    private void docTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_docTxtKeyReleased
-
-        //webscoket modification
-        JsonHelper helper = new JsonHelper();
-        HashMap<String, String> doc = new HashMap<>();
-        doc.put("idDoc", Integer.toString(idSelectedDoc));
-        doc.put("idU", Integer.toString(UtilisateurHandler.utilisateur.getId()));
-        doc.put("txt", docTxt.getText());
-        String stringifiedDoc = helper.encodeDoc(doc);
-        docWS.sendMessage(stringifiedDoc);
-
-    }//GEN-LAST:event_docTxtKeyReleased
 
     private void jButton11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton11ActionPerformed
 
@@ -1884,16 +2096,232 @@ public class Dashboard extends javax.swing.JFrame {
 
     }//GEN-LAST:event_jButton11ActionPerformed
 
+    private void btnVoirUtilisateursActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirUtilisateursActionPerformed
+        DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
+        int i = MesDocuments.getSelectedRow();
+
+        if (i >= 0) {
+            IDocumentHandler documentHandler = new DocumentHandler();
+            String partageAvec = model.getValueAt(i, 8).toString();
+            System.out.println("partage avec " + partageAvec);
+            if (partageAvec.length() > 0) {
+                VoirUtilisateurs voirUtilisateurs = new VoirUtilisateurs(partageAvec, this);
+                voirUtilisateurs.setVisible(true);
+            }
+        }
+    }//GEN-LAST:event_btnVoirUtilisateursActionPerformed
+
+    private void MesDocumentsMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MesDocumentsMouseReleased
+        DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
+        int i = MesDocuments.getSelectedRow();
+        System.out.println("Im clicked");
+        if (i >= 0) {
+            IDocumentHandler documentHandler = new DocumentHandler();
+            String partageAvec = model.getValueAt(i, 8).toString();
+            if (partageAvec.length() > 0) {
+                btnVoirUtilisateurs.setEnabled(true);
+                System.out.println("enqbled true");
+            } else {
+                btnVoirUtilisateurs.setEnabled(false);
+                System.out.println("enqbled true");
+
+            }
+            System.out.println(btnVoirUtilisateurs.isEnabled());
+            btnVoirUtilisateurs.repaint();
+        }    }//GEN-LAST:event_MesDocumentsMouseReleased
+
+    private void btnVoirUtilisateurs1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirUtilisateurs1ActionPerformed
+        DefaultTableModel model = (DefaultTableModel) MesFavoris.getModel();
+        int i = MesFavoris.getSelectedRow();
+
+        if (i >= 0) {
+            IDocumentHandler documentHandler = new DocumentHandler();
+            String partageAvec = model.getValueAt(i, 8).toString();
+            System.out.println("partage avec " + partageAvec);
+            if (partageAvec.length() > 0) {
+                VoirUtilisateurs voirUtilisateurs = new VoirUtilisateurs(partageAvec, this);
+                voirUtilisateurs.setVisible(true);
+            }
+        }
+    }//GEN-LAST:event_btnVoirUtilisateurs1ActionPerformed
+
+    private void MesFavorisMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_MesFavorisMouseReleased
+        DefaultTableModel model = (DefaultTableModel) MesFavoris.getModel();
+        int i = MesFavoris.getSelectedRow();
+        System.out.println("Im clicked");
+        if (i >= 0) {
+            IDocumentHandler documentHandler = new DocumentHandler();
+            String partageAvec = model.getValueAt(i, 8).toString();
+            if (partageAvec.length() > 0) {
+                btnVoirUtilisateurs1.setEnabled(true);
+                System.out.println("enqbled true");
+            } else {
+                btnVoirUtilisateurs1.setEnabled(false);
+                System.out.println("enqbled true");
+
+            }
+            System.out.println(btnVoirUtilisateurs1.isEnabled());
+            btnVoirUtilisateurs1.repaint();
+        }    }//GEN-LAST:event_MesFavorisMouseReleased
+
+    private void docTxtKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_docTxtKeyReleased
+
+        //webscoket modification
+        if (evt.getKeyCode() != 157 && evt.getKeyCode() != 17) {
+            JsonHelper helper = new JsonHelper();
+            HashMap<String, String> doc = new HashMap<>();
+            doc.put("idDoc", Integer.toString(idSelectedDoc));
+            doc.put("idU", Integer.toString(UtilisateurHandler.utilisateur.getId()));
+            String documentText = docTxt.getText().substring(docTxt.getText().indexOf("<body>") + "<body>".length(), docTxt.getText().indexOf("</body>"));
+            System.out.println(documentText);
+            doc.put("txt", documentText);
+            String stringifiedDoc = helper.encodeDoc(doc);
+            docWS.sendMessage(stringifiedDoc);
+
+            System.out.println("justpressedKey: " + evt.getKeyCode());
+            System.out.println("keyPressed: " + keyPressed);
+            System.out.println("====");
+            if ((keyPressed == 157 || keyPressed == 17) && evt.getKeyCode() == 85) {
+                btnRedo.doClick();
+            } else if ((keyPressed == 157 || keyPressed == 17) && evt.getKeyCode() == 90) {
+                System.out.println("keyPressed: " + keyPressed);
+                btnUndo.doClick();
+            }
+
+        } else {
+            keyPressed = -1;
+        }
+    }//GEN-LAST:event_docTxtKeyReleased
+
+    private void btnGrasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGrasActionPerformed
+        declancheAction = new JButton(boldAction);
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnGrasActionPerformed
+
+    private void btnItalicActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnItalicActionPerformed
+        declancheAction = new JButton(italicAction);
+        declancheAction.doClick();
+        docTxt.requestFocus();
+
+    }//GEN-LAST:event_btnItalicActionPerformed
+
+    private void btnSouligneActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSouligneActionPerformed
+        declancheAction = new JButton(underlineAction);
+        declancheAction.doClick();
+        docTxt.requestFocus();
+
+    }//GEN-LAST:event_btnSouligneActionPerformed
+
+    private void cmbFontsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFontsActionPerformed
+        int index = cmbFonts.getSelectedIndex();
+        if (fontTypes[index] != "") {
+            System.out.println(fontTypes[index]);
+            declancheAction.setAction(new StyledEditorKit.FontFamilyAction(fontTypes[index], fontTypes[index]));
+            declancheAction.doClick();
+            docTxt.requestFocus();
+        }
+    }//GEN-LAST:event_cmbFontsActionPerformed
+
+    private void jButton12ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton12ActionPerformed
+        Color newColor = JColorChooser.showDialog(null, "Choose a color", currentColor);
+        currentColor = newColor;
+        declancheAction = new JButton(new StyledEditorKit.ForegroundAction("currentColor", currentColor));
+        declancheAction.doClick();
+
+        jlblColorViewer.setIcon(jlabelIcon(currentColor));
+        docTxt.requestFocus();
+        repaint();
+    }//GEN-LAST:event_jButton12ActionPerformed
+    private ImageIcon jlabelIcon(Color color) {
+        BufferedImage image = new BufferedImage(20, 20, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = image.createGraphics();
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, 20, 20);
+        graphics.setXORMode(color);
+        graphics.drawRect(0, 0, 20 - 1, 20 - 1);
+        image.flush();
+        ImageIcon icon = new ImageIcon(image);
+        return icon;
+    }
+    private void btnAlignGaucheActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlignGaucheActionPerformed
+        declancheAction.setAction(new StyledEditorKit.AlignmentAction("Left Align", StyleConstants.ALIGN_LEFT));
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnAlignGaucheActionPerformed
+
+    private void btnAlignSroitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlignSroitActionPerformed
+        declancheAction = new JButton(new StyledEditorKit.AlignmentAction("Right Align", StyleConstants.ALIGN_RIGHT));
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnAlignSroitActionPerformed
+
+    private void btnAlignCentreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAlignCentreActionPerformed
+        declancheAction = new JButton(new StyledEditorKit.AlignmentAction("Center", StyleConstants.ALIGN_CENTER));
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnAlignCentreActionPerformed
+
+    private void btnBarreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBarreActionPerformed
+        declancheAction = new JButton(new StrikeThroughAction());
+        declancheAction.doClick();
+        docTxt.requestFocus();
+
+    }//GEN-LAST:event_btnBarreActionPerformed
+
+    private void btnRedoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRedoActionPerformed
+        declancheAction = new JButton(redoAction);
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnRedoActionPerformed
+
+    private void btnUndoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUndoActionPerformed
+
+        declancheAction = new JButton(undoAction);
+        declancheAction.doClick();
+        docTxt.requestFocus();
+    }//GEN-LAST:event_btnUndoActionPerformed
+
+    private void cmbTailleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbTailleActionPerformed
+        int index = cmbTaille.getSelectedIndex();
+        if (tailles[index] != -1) {
+            declancheAction = new JButton(new StyledEditorKit.FontSizeAction(String.valueOf(tailles[index]), tailles[index]));
+            declancheAction.doClick();
+            System.out.println(tailles[index]);
+            docTxt.requestFocus();
+        }
+    }//GEN-LAST:event_cmbTailleActionPerformed
+
+    private void docTxtKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_docTxtKeyPressed
+
+        if (evt.getKeyCode() == 157 || evt.getKeyCode() == 17) {
+            keyPressed = evt.getKeyCode();
+        }
+    }//GEN-LAST:event_docTxtKeyPressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable Historique;
     private javax.swing.JTable HistoriqueDoc;
     private javax.swing.JTable MesDocuments;
     private javax.swing.JTable MesFavoris;
+    private javax.swing.JButton btnAlignCentre;
+    private javax.swing.JButton btnAlignGauche;
+    private javax.swing.JButton btnAlignSroit;
+    private javax.swing.JButton btnBarre;
+    private javax.swing.JButton btnGras;
+    private javax.swing.JButton btnItalic;
     private javax.swing.JButton btnModifierMesDoc;
+    private javax.swing.JButton btnRedo;
+    private javax.swing.JButton btnSouligne;
     private javax.swing.JButton btnTelechargerDoc;
+    private javax.swing.JButton btnUndo;
+    private javax.swing.JButton btnVoirUtilisateurs;
+    private javax.swing.JButton btnVoirUtilisateurs1;
     private javax.swing.JButton btnVoirmesDocs;
     private javax.swing.JButton btnVoirmesDocs1;
+    private javax.swing.JComboBox<String> cmbFonts;
     private javax.swing.JComboBox<String> cmbStatus;
+    private javax.swing.JComboBox<String> cmbTaille;
     private javax.swing.JPanel container;
     private javax.swing.JTextArea convGrp;
     public javax.swing.JTextArea conversationMsg;
@@ -1910,6 +2338,7 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton10;
     private javax.swing.JButton jButton11;
+    private javax.swing.JButton jButton12;
     private javax.swing.JButton jButton14;
     private javax.swing.JButton jButton15;
     private javax.swing.JButton jButton16;
@@ -1934,9 +2363,6 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
@@ -1946,6 +2372,7 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
     private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel15;
     private javax.swing.JPanel jPanel16;
@@ -1975,10 +2402,8 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
-    private javax.swing.JToggleButton jToggleButton1;
-    private javax.swing.JToggleButton jToggleButton2;
-    private javax.swing.JToggleButton jToggleButton3;
     private javax.swing.JButton jbtnSupprimerDocModifierDoc;
+    private javax.swing.JLabel jlblColorViewer;
     private javax.swing.JLabel lblAccueilIcone3;
     private javax.swing.JLabel lblMesDocIcone;
     private javax.swing.JLabel lblNomUtilisateur;
@@ -1989,12 +2414,83 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JTextArea msgTxt;
     private javax.swing.JPanel nav;
     private javax.swing.JPanel pnlPartage;
-    private java.awt.ScrollPane scrollPcontactes;
+    public java.awt.ScrollPane scrollPcontactes;
     private javax.swing.JPanel sideBar;
-    private javax.swing.JTabbedPane tabPaneMain;
+    public javax.swing.JTabbedPane tabPaneMain;
     private javax.swing.JTextArea txtDesc;
     private javax.swing.JTextField txtEmails;
     private javax.swing.JTextField txtIntitule;
     private javax.swing.JTextField txtTags;
     // End of variables declaration//GEN-END:variables
+class UndoHandler implements UndoableEditListener {
+
+        /**
+         * Messaged when the Document has created an edit, the edit is added to
+         * <code>undo</code>, an instance of UndoManager.
+         */
+        public void undoableEditHappened(UndoableEditEvent e) {
+            undo.addEdit(e.getEdit());
+            undoAction.update();
+            redoAction.update();
+        }
+    }
+
+    class UndoAction extends AbstractAction {
+
+        public UndoAction() {
+            super("Undo");
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.undo();
+            } catch (CannotUndoException ex) {
+                System.out.println("Unable to undo: " + ex);
+                ex.printStackTrace();
+            }
+            update();
+            redoAction.update();
+        }
+
+        protected void update() {
+            if (undo.canUndo()) {
+                setEnabled(true);
+                putValue(Action.NAME, undo.getUndoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, "Undo");
+            }
+        }
+    }
+
+    class RedoAction extends AbstractAction {
+
+        public RedoAction() {
+            super("Redo");
+            setEnabled(false);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            try {
+                undo.redo();
+            } catch (CannotRedoException ex) {
+                System.err.println("Unable to redo: " + ex);
+                ex.printStackTrace();
+            }
+            update();
+            undoAction.update();
+        }
+
+        protected void update() {
+            if (undo.canRedo()) {
+                setEnabled(true);
+                putValue(Action.NAME, undo.getRedoPresentationName());
+            } else {
+                setEnabled(false);
+                putValue(Action.NAME, "Redo");
+            }
+        }
+    }
+
 }

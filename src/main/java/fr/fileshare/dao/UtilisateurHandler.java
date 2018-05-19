@@ -87,11 +87,11 @@ public class UtilisateurHandler implements IUtilisateurHandler {
 
                     if (object != null) {
                         utilisateur = (Utilisateur) object;
-                        MessageBox.messageBox("Connecté",MessageBox.SUCCESS);
+                        MessageBox.show("Connecté",MessageBox.SUCCESS,null);
 
                         check = true;
                     } else
-                        JOptionPane.showMessageDialog(null, "Email ou mot de passe incorrecte", "Info", JOptionPane.PLAIN_MESSAGE);
+                       MessageBox.show( "Email ou mot de passe incorrecte",MessageBox.ERROR,null);
 
 
                 } catch (Exception e) {
@@ -101,7 +101,7 @@ public class UtilisateurHandler implements IUtilisateurHandler {
                     session.close();
                 }
             } else
-                JOptionPane.showMessageDialog(null, "Veuillez fournire votre mail et mot de passe", "Info", JOptionPane.PLAIN_MESSAGE);
+                MessageBox.show( "Veuillez fournire votre mail et mot de passe",MessageBox.WARNING,null);
 
         return check;
     }

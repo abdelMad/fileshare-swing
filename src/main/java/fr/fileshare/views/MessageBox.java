@@ -6,6 +6,7 @@
 package fr.fileshare.views;
 
 import java.awt.Color;
+import javax.swing.JFrame;
 
 /**
  *
@@ -17,46 +18,55 @@ public class MessageBox extends javax.swing.JFrame {
     public static int ERROR = 1;
     public static int WARNING = 2;
     public static int INFO = 3;
-    
-    public MessageBox(){
+    private JFrame jfr;
+
+    public MessageBox() {
     }
+
     /**
      * Creates new form MessageBox
      */
-    public MessageBox(String message, int STATUS) {
+    public MessageBox(String message, int STATUS, JFrame jfr) {
         initComponents();
+        if(jfr == null)
+            jfr = new JFrame();
+        this.jfr = jfr;
         switch (STATUS) {
             case 0://success
-                this.setBackground(new Color(223,240,216));
-                this.lblTxt.setForeground(new Color(60,118,61));
-                this.pnlBtn.setBackground(new Color(60,118,61));
-                this.btnOk.setForeground(new Color(223,240,216));
+                this.setBackground(new Color(223, 240, 216));
+                this.lblTxt.setForeground(new Color(60, 118, 61));
+                this.pnlBtn.setBackground(new Color(60, 118, 61));
+                this.btnOk.setForeground(new Color(223, 240, 216));
                 break;
             case 1://error
-                this.setBackground(new Color(242,222,222));
-                this.lblTxt.setForeground(new Color(169,68,66));
-                this.pnlBtn.setBackground(new Color(169,68,66));
-                this.btnOk.setForeground(new Color(242,222,222));
+                this.setBackground(new Color(242, 222, 222));
+                this.lblTxt.setForeground(new Color(169, 68, 66));
+                this.pnlBtn.setBackground(new Color(169, 68, 66));
+                this.btnOk.setForeground(new Color(242, 222, 222));
                 break;
             case 2://warning
-                this.setBackground(new Color(252,248,227));
-                this.lblTxt.setForeground(new Color(138,109,59));
-                this.pnlBtn.setBackground(new Color(138,109,59));
-                this.btnOk.setForeground(new Color(252,248,227));
+                this.setBackground(new Color(252, 248, 227));
+                this.lblTxt.setForeground(new Color(138, 109, 59));
+                this.pnlBtn.setBackground(new Color(138, 109, 59));
+                this.btnOk.setForeground(new Color(252, 248, 227));
                 break;
             case 3://info
-                this.setBackground(new Color(217,237,247));
-                this.lblTxt.setForeground(new Color(49,112,143));
-                this.pnlBtn.setBackground(new Color(49,112,143));
-                this.btnOk.setForeground(new Color(217,237,247));
+                this.setBackground(new Color(217, 237, 247));
+                this.lblTxt.setForeground(new Color(49, 112, 143));
+                this.pnlBtn.setBackground(new Color(49, 112, 143));
+                this.btnOk.setForeground(new Color(217, 237, 247));
                 break;
         }
         this.lblTxt.setText(message);
         this.setVisible(true);
+        jfr.setEnabled(false);
     }
-    public static void messageBox(String msg , int status){
-        new MessageBox(msg, status);
+
+    public static void show(String msg, int status, JFrame jfr) {
+        new MessageBox(msg, status, jfr);
+
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -73,6 +83,7 @@ public class MessageBox extends javax.swing.JFrame {
         jButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setAlwaysOnTop(true);
         setUndecorated(true);
         setResizable(false);
 
@@ -91,6 +102,7 @@ public class MessageBox extends javax.swing.JFrame {
         btnOk.setForeground(new java.awt.Color(217, 237, 247));
         btnOk.setText("OK");
         btnOk.setBorderPainted(false);
+        btnOk.setContentAreaFilled(false);
         btnOk.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnOkActionPerformed(evt);
@@ -125,14 +137,15 @@ public class MessageBox extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnOkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOkActionPerformed
+        jfr.setEnabled(true);
         this.dispose();
     }//GEN-LAST:event_btnOkActionPerformed
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        jfr.setEnabled(true);
         this.dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
 
-   
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnOk;
