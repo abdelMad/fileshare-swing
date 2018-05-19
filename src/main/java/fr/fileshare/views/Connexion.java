@@ -288,10 +288,12 @@ public class Connexion extends javax.swing.JFrame {
         String mdp = mdpTxt.getText().trim();
         if(email.length()!=0 && mdp.length()!=0 ){
             IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
-            if(utilisateurHandler.authenticate(email, mdp))
-                new Dashboard(this);
+            if(utilisateurHandler.authenticate(email, mdp)){
+                System.out.println("Im logging in ...");
             emailTxt.setText("");
             mdpTxt.setText("");
+             new Dashboard(this);
+            }
         }
     }//GEN-LAST:event_btnConnexionActionPerformed
 

@@ -82,7 +82,7 @@
                 </Property>
                 <Property name="text" type="java.lang.String" value="Mot de passe oubli&#xe9;?"/>
                 <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                  <Color id="Curseur par d&#xe9;faut"/>
+                  <Color id="Default Cursor"/>
                 </Property>
               </Properties>
               <Constraints>
@@ -223,7 +223,7 @@
                     </Property>
                     <Property name="borderPainted" type="boolean" value="false"/>
                     <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                      <Color id="Curseur par d&#xe9;faut"/>
+                      <Color id="Default Cursor"/>
                     </Property>
                   </Properties>
                   <Events>
@@ -510,7 +510,7 @@
                 </Property>
                 <Property name="borderPainted" type="boolean" value="false"/>
                 <Property name="cursor" type="java.awt.Cursor" editor="org.netbeans.modules.form.editors2.CursorEditor">
-                  <Color id="Curseur par d&#xe9;faut"/>
+                  <Color id="Default Cursor"/>
                 </Property>
               </Properties>
               <Events>

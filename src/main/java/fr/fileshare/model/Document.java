@@ -2,6 +2,7 @@ package fr.fileshare.model;
 
 import javax.persistence.*;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -17,6 +18,7 @@ public class Document {
     @Column(name = "document_id")
     private int id;
     private String intitule;
+    @Column(columnDefinition = "TEXT")
     private String description;
     private Date datePublixation;
     private Date dateDerniereModif;
@@ -24,19 +26,28 @@ public class Document {
     @JoinColumn(name = "dernier_editeur")
     private Utilisateur dernierEditeur;
     private String tag;
-    private String mdp;
+    private boolean readOnly;
     private int status;
     @ManyToOne
     @JoinColumn(name = "auteur")
     private Utilisateur auteur;
-    @OneToMany(mappedBy = "document", fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "document", cascade = CascadeType.REMOVE)
     private Set<Historique> historique;
+
+    @OneToMany(mappedBy = "groupe")
+    private Set<Message> messagesGroupe;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name="document_utilisateur", joinColumns=@JoinColumn(name="document_id"), inverseJoinColumns=@JoinColumn(name="utilisateur_id"))
     private Set<Utilisateur> utilisateursAvecDroit;
     @Column(columnDefinition = "TEXT")
     private String dernierContenu;
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "favoris", joinColumns = @JoinColumn(name = "document_id"), inverseJoinColumns = @JoinColumn(name = "utilisateur_id"))
+    private Set<Utilisateur> utilisateursFavoris;
+
+    @Column(unique = true)
+    private String version;
 
     public Document() {
     }
@@ -106,14 +117,6 @@ public class Document {
         this.status = status;
     }
 
-    public String getMdp() {
-        return mdp;
-    }
-
-    public void setMdp(String mdp) {
-        this.mdp = mdp;
-    }
-
     public Set<Utilisateur> getUtilisateursAvecDroit() {
         return utilisateursAvecDroit;
     }
@@ -144,5 +147,51 @@ public class Document {
 
     public void setDernierContenu(String dernierContenu) {
         this.dernierContenu = dernierContenu;
+    }
+
+    public Set<Utilisateur> getUtilisateursFavoris() {
+        return utilisateursFavoris;
+    }
+
+    public void setUtilisateursFavoris(Set<Utilisateur> utilisateursFavoris) {
+        this.utilisateursFavoris = utilisateursFavoris;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public boolean isReadOnly() {
+        return readOnly;
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
+    }
+
+    public Set<Message> getMessagesGroupe() {
+        return messagesGroupe;
+    }
+
+    public void setMessagesGroupe(Set<Message> messagesGroupe) {
+        this.messagesGroupe = messagesGroupe;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Document document = (Document) o;
+        return id == document.id;
+    }
+
+    @Override
+    public int hashCode() {
+
+        return Objects.hash(id);
     }
 }

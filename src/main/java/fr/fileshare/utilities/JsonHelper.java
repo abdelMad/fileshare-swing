@@ -74,5 +74,17 @@ public class JsonHelper {
         doc.put("txt", jsonObject.getString("txt"));
         return doc;
     }
+    
+    
+    public Utilisateur decodeUtilisateur(final String utilisateurString) {
+        JSONObject jsonObject = new JSONObject(utilisateurString);
+        Utilisateur utilisateur = new Utilisateur();
+        utilisateur.setId(jsonObject.getInt("senderId"));
+        String[] fullName = jsonObject.getString("sender").split(" ");
+        utilisateur.setPrenom(fullName[0]);
+        utilisateur.setNom(fullName[1]);
+        utilisateur.setImage(jsonObject.getString("senderImg"));
+        return utilisateur;
+    }
 
 }

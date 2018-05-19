@@ -11,6 +11,7 @@ public class Message {
     @Id
     @GeneratedValue
     private int id;
+    @Column(columnDefinition = "TEXT")
     private String text;
     @ManyToOne
     @JoinColumn(name = "emetteur")
@@ -20,7 +21,9 @@ public class Message {
     private Utilisateur recepteur;
     private Date date;
     private String status;
-
+    @ManyToOne
+    @JoinColumn(name = "messagesGroupe")
+    private Document groupe;
     public Message() {
     }
 
@@ -70,5 +73,13 @@ public class Message {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Document getGroupe() {
+        return groupe;
+    }
+
+    public void setGroupe(Document groupe) {
+        this.groupe = groupe;
     }
 }

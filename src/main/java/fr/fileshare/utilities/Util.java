@@ -1,4 +1,4 @@
-package fr.fileshare.dao;
+package fr.fileshare.utilities;
 
 
 import fr.fileshare.views.MessageBox;

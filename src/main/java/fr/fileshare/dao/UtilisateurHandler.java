@@ -1,5 +1,6 @@
 package fr.fileshare.dao;
 
+import fr.fileshare.utilities.Util;
 import fr.fileshare.model.Utilisateur;
 import fr.fileshare.model.VerificationToken;
 import fr.fileshare.views.MessageBox;

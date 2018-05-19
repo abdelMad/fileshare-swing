@@ -41,6 +41,8 @@ public class VoirDocument extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
+        jpanDoc.setEditable(false);
+        jpanDoc.setFocusable(false);
         jScrollPane1.setViewportView(jpanDoc);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
