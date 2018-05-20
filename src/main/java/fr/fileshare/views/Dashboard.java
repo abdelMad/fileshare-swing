@@ -49,6 +49,7 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
+import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -59,6 +60,8 @@ import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.text.Element;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledEditorKit;
 import javax.swing.text.html.HTML;
@@ -83,7 +86,7 @@ public class Dashboard extends javax.swing.JFrame {
     ClientEndPointX chatGrpWS;
     ClientEndPointX docWS;
     int idSelectedDoc = -1;
-
+    boolean isModifEnligne = true;
     protected UndoableEditListener undoHandler = new UndoHandler();
     protected UndoManager undo = new UndoManager();
     private UndoAction undoAction = new UndoAction();
@@ -137,6 +140,17 @@ public class Dashboard extends javax.swing.JFrame {
             }
         }
 
+        try {
+            URI uri = new URI("ws://localhost:8085/chat/" + UtilisateurHandler.utilisateur.getId() + "/-1");
+            chatWS = new ClientEndPointX(uri);
+            chatWS.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            isModifEnligne = false;
+        }
+
+        jButton6.setEnabled(isModifEnligne);
         loadMesDocuments();
         pnlPartage.setVisible(false);
         final boolean showTabsHeader = false;
@@ -181,6 +195,7 @@ public class Dashboard extends javax.swing.JFrame {
         lblUtilisateurImage = new javax.swing.JLabel();
         jLabel10 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
+        lblStatus = new javax.swing.JLabel();
         sideBar = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -331,6 +346,10 @@ public class Dashboard extends javax.swing.JFrame {
         jLabel9.setForeground(new java.awt.Color(255, 255, 255));
         jLabel9.setText("File Share");
         nav.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 20, -1, -1));
+
+        lblStatus.setFont(new java.awt.Font("Lucida Grande", 1, 13)); // NOI18N
+        lblStatus.setForeground(new java.awt.Color(255, 51, 51));
+        nav.add(lblStatus, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, -1, -1));
 
         container.add(nav, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1000, 90));
 
@@ -1876,6 +1895,7 @@ public class Dashboard extends javax.swing.JFrame {
         try {
 
             chatGrpWS = new ClientEndPointX(uri);
+            System.out.println("I arrived here");
             chatGrpWS.addMessageHandler(responseString -> {
                 try {
                     System.out.println("Messare received");
@@ -1886,7 +1906,7 @@ public class Dashboard extends javax.swing.JFrame {
                     convGrp.setForeground(Color.black);
                     convGrp.setText(conversation);
                 } catch (Exception e) {
-
+                    isModifEnligne = false;
                 }
             });
 
@@ -1931,11 +1951,12 @@ public class Dashboard extends javax.swing.JFrame {
                         document.setInnerHTML(body, doc.get("txt"));
                     }
                 } catch (Exception e) {
-
+                    isModifEnligne = false;
                     e.printStackTrace();
                 }
             });
         } catch (Exception e) {
+            isModifEnligne = false;
             e.printStackTrace();
         }
 
@@ -1956,7 +1977,7 @@ public class Dashboard extends javax.swing.JFrame {
             jButton11.setText("Retirer des favoris");
         }
         Document document = documentHandler.get(idSelectedDoc);
-        System.out.println("Dernier contenu: "+document.getDernierContenu());
+        System.out.println("Dernier contenu: " + document.getDernierContenu());
         Element[] roots = this.document.getRootElements();
         Element body = null;
         for (int i = 0; i < roots[0].getElementCount(); i++) {
@@ -1968,13 +1989,13 @@ public class Dashboard extends javax.swing.JFrame {
             }
         }
         System.out.println(body);
-        
+
         try {
             this.document.setInnerHTML(body, document.getDernierContenu());
         } catch (Exception e) {
             e.printStackTrace();
         }
-       
+
         lblTitreDoc.setText(document.getIntitule());
         tabPaneMain.setSelectedIndex(4);
     }
@@ -2259,16 +2280,19 @@ public class Dashboard extends javax.swing.JFrame {
 
         //webscoket modification
         if (evt.getKeyCode() != 157 && evt.getKeyCode() != 17) {
-            JsonHelper helper = new JsonHelper();
-            HashMap<String, String> doc = new HashMap<>();
-            doc.put("idDoc", Integer.toString(idSelectedDoc));
-            doc.put("idU", Integer.toString(UtilisateurHandler.utilisateur.getId()));
-            String documentText = docTxt.getText().substring(docTxt.getText().indexOf("<body>") + "<body>".length(), docTxt.getText().indexOf("</body>"));
-            System.out.println(documentText);
-            doc.put("txt", documentText);
-            String stringifiedDoc = helper.encodeDoc(doc);
-            docWS.sendMessage(stringifiedDoc);
+            if (isModifEnligne) {
+                JsonHelper helper = new JsonHelper();
+                HashMap<String, String> doc = new HashMap<>();
+                doc.put("idDoc", Integer.toString(idSelectedDoc));
+                doc.put("idU", Integer.toString(UtilisateurHandler.utilisateur.getId()));
+                String documentText = docTxt.getText().substring(docTxt.getText().indexOf("<body>") + "<body>".length(), docTxt.getText().indexOf("</body>"));
+                System.out.println(documentText);
+                doc.put("txt", documentText);
+                String stringifiedDoc = helper.encodeDoc(doc);
+                docWS.sendMessage(stringifiedDoc);
+            } else {
 
+            }
             System.out.println("justpressedKey: " + evt.getKeyCode());
             System.out.println("keyPressed: " + keyPressed);
             System.out.println("====");
@@ -2497,6 +2521,7 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JLabel lblAccueilIcone3;
     private javax.swing.JLabel lblMesDocIcone;
     private javax.swing.JLabel lblNomUtilisateur;
+    private javax.swing.JLabel lblStatus;
     private javax.swing.JLabel lblTitreDoc;
     private javax.swing.JLabel lblUtilisateurImage;
     private javax.swing.JPanel main;
@@ -2512,7 +2537,26 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JTextField txtIntitule;
     private javax.swing.JTextField txtTags;
     // End of variables declaration//GEN-END:variables
-class UndoHandler implements UndoableEditListener {
+    class StrikeThroughAction extends StyledEditorKit.StyledTextAction {
+
+        public StrikeThroughAction() {
+            super(StyleConstants.StrikeThrough.toString());
+        }
+
+        public void actionPerformed(ActionEvent ae) {
+            JEditorPane editor = getEditor(ae);
+            if (editor != null) {
+                StyledEditorKit kit = getStyledEditorKit(editor);
+                MutableAttributeSet attr = kit.getInputAttributes();
+                boolean strikeThrough = (StyleConstants.isStrikeThrough(attr)) ? false : true;
+                SimpleAttributeSet sas = new SimpleAttributeSet();
+                StyleConstants.setStrikeThrough(sas, strikeThrough);
+                setCharacterAttributes(editor, sas, false);
+            }
+        }
+    }
+
+    class UndoHandler implements UndoableEditListener {
 
         /**
          * Messaged when the Document has created an edit, the edit is added to

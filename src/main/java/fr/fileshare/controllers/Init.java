@@ -5,8 +5,6 @@ import fr.fileshare.dao.SessionFactoryHelper;
 import fr.fileshare.dao.UtilisateurHandler;
 import fr.fileshare.views.Connexion;
 import fr.fileshare.views.Dashboard;
-import fr.fileshare.views.Debug;
-import fr.fileshare.views.HTMLDocumentEditor;
 import java.io.File;
 
 /**

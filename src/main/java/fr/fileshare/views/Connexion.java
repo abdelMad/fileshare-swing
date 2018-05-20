@@ -6,8 +6,10 @@
 package fr.fileshare.views;
 
 import fr.fileshare.dao.IUtilisateurHandler;
+import fr.fileshare.dao.SessionFactoryHelper;
 import fr.fileshare.dao.UtilisateurHandler;
 import fr.fileshare.utilities.Util;
+import java.awt.Color;
 
 /**
  *
@@ -18,15 +20,35 @@ public class Connexion extends javax.swing.JFrame {
     /**
      * Creates new form Connexion
      */
+    boolean isEnligne = true;
+
     public Connexion() {
         initComponents();
         String utilisateur = Util.getProperty("uilisateur");
         String mdp = Util.getProperty("mdp");
-        if(!mdp.equals("x") && !utilisateur.equals("x")){
+        if (!mdp.equals("x") && !utilisateur.equals("x")) {
             emailTxt.setText(utilisateur);
             mdpTxt.setText(mdp);
             chbxRememberMe.setSelected(true);
         }
+
+        try {
+            SessionFactoryHelper.init();
+        } catch (Exception e) {
+            e.printStackTrace();
+            isEnligne = false;
+        }
+
+        btnInscription.setEnabled(isEnligne);
+        if (!isEnligne) {
+            lblStatus.setText("Vous êtes en mode hors connexion");
+            lblStatus.setForeground(Color.red);
+            lblStatus2.setText("Vous pouvez creer des documents en fournissant vos infos");
+            lblStatus2.setForeground(Color.red);
+            lblStatus1.setText("Cela sera enregistré lors de votre prochaine connexion ");
+            lblStatus1.setForeground(Color.red);
+        }
+
     }
 
     /**
@@ -51,6 +73,9 @@ public class Connexion extends javax.swing.JFrame {
         btnConnexion = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
         chbxRememberMe = new javax.swing.JCheckBox();
+        lblStatus = new javax.swing.JLabel();
+        lblStatus1 = new javax.swing.JLabel();
+        lblStatus2 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         emailTxtInscription = new javax.swing.JTextField();
         jSeparator3 = new javax.swing.JSeparator();
@@ -162,6 +187,15 @@ public class Connexion extends javax.swing.JFrame {
         chbxRememberMe.setContentAreaFilled(false);
         jPanel3.add(chbxRememberMe, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 310, -1, -1));
 
+        lblStatus.setText("jLabel11");
+        jPanel3.add(lblStatus, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 50, -1, -1));
+
+        lblStatus1.setText("jLabel11");
+        jPanel3.add(lblStatus1, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 510, -1, -1));
+
+        lblStatus2.setText("jLabel11");
+        jPanel3.add(lblStatus2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 480, -1, -1));
+
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 420, 560));
 
         jLabel5.setBackground(new java.awt.Color(67, 142, 185));
@@ -272,7 +306,7 @@ public class Connexion extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnConnexionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnConnexionMouseClicked
-            
+
     }//GEN-LAST:event_btnConnexionMouseClicked
 
     private void btnInscriptionMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btnInscriptionMouseClicked
@@ -281,11 +315,12 @@ public class Connexion extends javax.swing.JFrame {
         String Prenom = PrenomTxt.getText().trim();
         String mdp = mdpInscriptionTxt.getText().trim();
         String verifMdp = verificationMdpTxt.getText().trim();
-        if(email.length()!=0 && mdp.length()!=0 && Prenom.length()!=0 && nom.length()!=0 && verifMdp.length()!=0 ){
+        if (email.length() != 0 && mdp.length() != 0 && Prenom.length() != 0 && nom.length() != 0 && verifMdp.length() != 0) {
             IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
-            if(utilisateurHandler.register(nom, Prenom, email, mdp, verifMdp))
-                 new Dashboard(this);
-            
+            if (utilisateurHandler.register(nom, Prenom, email, mdp, verifMdp)) {
+                new Dashboard(this);
+            }
+
         }
     }//GEN-LAST:event_btnInscriptionMouseClicked
 
@@ -298,15 +333,23 @@ public class Connexion extends javax.swing.JFrame {
     }//GEN-LAST:event_emailTxtActionPerformed
 
     private void btnConnexionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnexionActionPerformed
-        String email = emailTxt.getText().trim();
-        String mdp = mdpTxt.getText().trim();
-        if(email.length()!=0 && mdp.length()!=0 ){
-            IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
-            if(utilisateurHandler.authenticate(email, mdp)){
-                System.out.println("Im logging in ...");
-            emailTxt.setText("");
-            mdpTxt.setText("");
-             new Dashboard(this);
+        if (isEnligne) {
+            String email = emailTxt.getText().trim();
+            String mdp = mdpTxt.getText().trim();
+            if (email.length() != 0 && mdp.length() != 0) {
+                IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
+                if (utilisateurHandler.authenticate(email, mdp)) {
+                    System.out.println("Im logging in ...");
+                    emailTxt.setText("");
+                    mdpTxt.setText("");
+                    new Dashboard(this);
+                }
+            }
+        } else {
+            String email = emailTxt.getText().trim();
+            String mdp = mdpTxt.getText().trim();
+            if (email.length() != 0 && mdp.length() != 0) {
+                new DashboardHorsLigne(this, email, mdp);
             }
         }
     }//GEN-LAST:event_btnConnexionActionPerformed
@@ -339,6 +382,9 @@ public class Connexion extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JLabel lblStatus;
+    private javax.swing.JLabel lblStatus1;
+    private javax.swing.JLabel lblStatus2;
     private javax.swing.JPasswordField mdpInscriptionTxt;
     private javax.swing.JPasswordField mdpTxt;
     private javax.swing.JTextField nomTxt;

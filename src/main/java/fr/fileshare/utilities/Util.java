@@ -12,6 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.mail.PasswordAuthentication;
@@ -149,8 +150,10 @@ public class Util {
 
     }
     
-    
-
+    public static String generateUniqueToken() {
+        UUID uuid = UUID.randomUUID();
+        return hashString(uuid.toString());
+    }
 
 
 
