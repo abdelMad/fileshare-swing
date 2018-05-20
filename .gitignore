@@ -16,3 +16,4 @@ log/
 target/
 /src/main/resources/hibernate.cfg.xml
 /bin/
+src/main/java/META-INF/MANIFEST.MF

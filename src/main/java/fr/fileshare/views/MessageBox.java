@@ -10,7 +10,7 @@ import javax.swing.JFrame;
 
 /**
  *
- * @author abdelmoghitmadih
+ * message box
  */
 public class MessageBox extends javax.swing.JFrame {
 

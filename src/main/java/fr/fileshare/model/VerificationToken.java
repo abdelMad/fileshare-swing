@@ -3,6 +3,11 @@ package fr.fileshare.model;
 import javax.persistence.*;
 import java.util.Date;
 
+/**
+ * Table verificationtoken qui contient les tokens
+ * de verification des utilisateur pour verification
+ * de mail et recuperation de mot de passe.
+ */
 @Entity
 @Table(name = "verificationtoken")
 public class VerificationToken {

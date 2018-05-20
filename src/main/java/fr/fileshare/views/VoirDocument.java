@@ -9,7 +9,7 @@ import fr.fileshare.model.Document;
 
 /**
  *
- * @author pret
+ * Interface de visualisation de document
  */
 public class VoirDocument extends javax.swing.JFrame {
 

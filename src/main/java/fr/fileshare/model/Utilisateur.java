@@ -3,7 +3,9 @@ package fr.fileshare.model;
 import javax.persistence.*;
 import java.util.Date;
 import java.util.Set;
-
+/**
+ * Table utilisateur
+ */
 @Entity
 @Table(name = "utilisateur")
 public class Utilisateur {

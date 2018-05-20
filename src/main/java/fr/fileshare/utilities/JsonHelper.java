@@ -9,7 +9,10 @@ import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Queue;
-
+/**
+ * class qui contien des methodes d'encodage et decodages JSON
+ * pour message,utilisateur et document
+ */
 public class JsonHelper {
 
     public HashMap<String, String> decodeMessage(String textMessage) {

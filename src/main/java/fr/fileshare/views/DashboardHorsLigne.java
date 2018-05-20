@@ -46,7 +46,7 @@ import javax.swing.undo.UndoManager;
 
 /**
  *
- * @author abdelmoghitmadih
+ * Interface de tableau de bord en mode hors ligne
  */
 public class DashboardHorsLigne extends javax.swing.JFrame {
 

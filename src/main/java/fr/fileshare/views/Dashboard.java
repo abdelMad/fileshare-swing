@@ -74,7 +74,7 @@ import org.json.JSONArray;
 
 /**
  *
- * @author abdelmoghitmadih
+ * Interface de tableau de bord
  */
 public class Dashboard extends javax.swing.JFrame {
 

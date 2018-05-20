@@ -17,7 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
-
+/**
+ * classe qui contient des methodes utiles
+ */
 public class Util {
 
     /**

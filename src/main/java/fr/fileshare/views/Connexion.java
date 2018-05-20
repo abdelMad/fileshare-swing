@@ -13,7 +13,7 @@ import java.awt.Color;
 
 /**
  *
- * @author abdelmoghitmadih
+ * Interface de connexion
  */
 public class Connexion extends javax.swing.JFrame {
 
@@ -41,12 +41,19 @@ public class Connexion extends javax.swing.JFrame {
 
         btnInscription.setEnabled(isEnligne);
         if (!isEnligne) {
+            lblStatus.setVisible(true);
+            lblStatus1.setVisible(true);
+            lblStatus2.setVisible(true);
             lblStatus.setText("Vous êtes en mode hors connexion");
             lblStatus.setForeground(Color.red);
             lblStatus2.setText("Vous pouvez creer des documents en fournissant vos infos");
             lblStatus2.setForeground(Color.red);
             lblStatus1.setText("Cela sera enregistré lors de votre prochaine connexion ");
             lblStatus1.setForeground(Color.red);
+        }else{
+            lblStatus.setVisible(false);
+            lblStatus1.setVisible(false);
+            lblStatus2.setVisible(false);
         }
 
     }

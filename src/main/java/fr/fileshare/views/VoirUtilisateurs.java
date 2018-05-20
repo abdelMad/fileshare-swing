@@ -26,7 +26,7 @@ import javax.swing.JPanel;
 
 /**
  *
- * @author abdelmoghitmadih
+ * Interface de visualisation des utilisateurs
  */
 public class VoirUtilisateurs extends javax.swing.JFrame {
 
