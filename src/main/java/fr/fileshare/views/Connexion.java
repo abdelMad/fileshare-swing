@@ -5,11 +5,30 @@
  */
 package fr.fileshare.views;
 
+import fr.fileshare.dao.DocumentHandler;
+import fr.fileshare.dao.HistoriqueHandler;
+import fr.fileshare.dao.IDocumentHandler;
+import fr.fileshare.dao.IHistoriqueHandler;
 import fr.fileshare.dao.IUtilisateurHandler;
 import fr.fileshare.dao.SessionFactoryHelper;
 import fr.fileshare.dao.UtilisateurHandler;
+import fr.fileshare.model.Document;
+import fr.fileshare.model.Historique;
+import fr.fileshare.model.Utilisateur;
 import fr.fileshare.utilities.Util;
+import fr.fileshare.utilities.XmlHelper;
+import fr.fileshare.websocket.ClientEndPointX;
 import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Desktop;
+import java.net.URI;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  *
@@ -24,37 +43,35 @@ public class Connexion extends javax.swing.JFrame {
 
     public Connexion() {
         initComponents();
-        String utilisateur = Util.getProperty("uilisateur");
-        String mdp = Util.getProperty("mdp");
-        if (!mdp.equals("x") && !utilisateur.equals("x")) {
-            emailTxt.setText(utilisateur);
-            mdpTxt.setText(mdp);
-            chbxRememberMe.setSelected(true);
+        try {
+            String utilisateur = Util.getPropertyUtilisateur("uilisateur");
+            String mdp = Util.getPropertyUtilisateur("mdp");
+            if (!mdp.equals("x") && !utilisateur.equals("x")) {
+                emailTxt.setText(utilisateur);
+                mdpTxt.setText(mdp);
+                chbxRememberMe.setSelected(true);
+            } else {
+                chbxRememberMe.setSelected(false);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         try {
+            System.out.println("dkhelt");
             SessionFactoryHelper.init();
+            URI uri = new URI("ws://localhost:8085/chat/0/-1");
+            ClientEndPointX chatWS = new ClientEndPointX(uri);
+            chatWS.close();
         } catch (Exception e) {
             e.printStackTrace();
             isEnligne = false;
         }
 
         btnInscription.setEnabled(isEnligne);
-        if (!isEnligne) {
-            lblStatus.setVisible(true);
-            lblStatus1.setVisible(true);
-            lblStatus2.setVisible(true);
-            lblStatus.setText("Vous êtes en mode hors connexion");
-            lblStatus.setForeground(Color.red);
-            lblStatus2.setText("Vous pouvez creer des documents en fournissant vos infos");
-            lblStatus2.setForeground(Color.red);
-            lblStatus1.setText("Cela sera enregistré lors de votre prochaine connexion ");
-            lblStatus1.setForeground(Color.red);
-        }else{
-            lblStatus.setVisible(false);
-            lblStatus1.setVisible(false);
-            lblStatus2.setVisible(false);
-        }
+        radioHl.setSelected(!isEnligne);
+        radioEl.setSelected(isEnligne);
+        __chargerMode();
 
     }
 
@@ -67,6 +84,7 @@ public class Connexion extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -83,6 +101,8 @@ public class Connexion extends javax.swing.JFrame {
         lblStatus = new javax.swing.JLabel();
         lblStatus1 = new javax.swing.JLabel();
         lblStatus2 = new javax.swing.JLabel();
+        radioHl = new javax.swing.JRadioButton();
+        radioEl = new javax.swing.JRadioButton();
         jLabel5 = new javax.swing.JLabel();
         emailTxtInscription = new javax.swing.JTextField();
         jSeparator3 = new javax.swing.JSeparator();
@@ -117,7 +137,12 @@ public class Connexion extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("SansSerif", 1, 13)); // NOI18N
         jLabel1.setForeground(new java.awt.Color(255, 255, 255));
         jLabel1.setText("Mot de passe oublié?");
-        jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jLabel1.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        jLabel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel1MouseClicked(evt);
+            }
+        });
         jPanel3.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 360, -1, -1));
 
         emailTxt.setBackground(new java.awt.Color(67, 142, 185));
@@ -192,6 +217,11 @@ public class Connexion extends javax.swing.JFrame {
         chbxRememberMe.setForeground(new java.awt.Color(255, 255, 255));
         chbxRememberMe.setText("Se rappeler de moi");
         chbxRememberMe.setContentAreaFilled(false);
+        chbxRememberMe.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                chbxRememberMeActionPerformed(evt);
+            }
+        });
         jPanel3.add(chbxRememberMe, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 310, -1, -1));
 
         lblStatus.setText("jLabel11");
@@ -202,6 +232,29 @@ public class Connexion extends javax.swing.JFrame {
 
         lblStatus2.setText("jLabel11");
         jPanel3.add(lblStatus2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 480, -1, -1));
+
+        buttonGroup1.add(radioHl);
+        radioHl.setForeground(new java.awt.Color(255, 0, 0));
+        radioHl.setText("Hors ligne");
+        radioHl.setContentAreaFilled(false);
+        radioHl.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioHlActionPerformed(evt);
+            }
+        });
+        jPanel3.add(radioHl, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 390, -1, -1));
+
+        buttonGroup1.add(radioEl);
+        radioEl.setForeground(new java.awt.Color(255, 255, 255));
+        radioEl.setSelected(true);
+        radioEl.setText("En ligne");
+        radioEl.setContentAreaFilled(false);
+        radioEl.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                radioElActionPerformed(evt);
+            }
+        });
+        jPanel3.add(radioEl, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 390, -1, -1));
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(370, 0, 420, 560));
 
@@ -340,15 +393,82 @@ public class Connexion extends javax.swing.JFrame {
     }//GEN-LAST:event_emailTxtActionPerformed
 
     private void btnConnexionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConnexionActionPerformed
+        this.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+        try {
+            Thread.sleep(1000);
+            this.revalidate();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         if (isEnligne) {
+
             String email = emailTxt.getText().trim();
             String mdp = mdpTxt.getText().trim();
             if (email.length() != 0 && mdp.length() != 0) {
                 IUtilisateurHandler utilisateurHandler = new UtilisateurHandler();
                 if (utilisateurHandler.authenticate(email, mdp)) {
+                    XmlHelper xmlHelper = new XmlHelper();
+                    List<HashMap<String, String>> listDocHl = xmlHelper.readXmlDocument(email, mdp);
+                    SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                    if (listDocHl.size() > 0) {
+                        IDocumentHandler documentHandler = new DocumentHandler();
+                        for (int i = 0; i < listDocHl.size(); i++) {
+                            HashMap<String, String> d = listDocHl.get(i);
+                            Document doc = new Document();
+                            doc.setAuteur(UtilisateurHandler.utilisateur);
+                            doc.setDernierContenu(d.get("text"));
+                            doc.setDateDerniereModif(new Date(d.get("datePub")));
+                            try {
+                                doc.setDatePublixation(formatter.parse(d.get("datePub")));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            doc.setDernierEditeur(UtilisateurHandler.utilisateur);
+                            doc.setDescription(d.get("description"));
+                            doc.setIntitule(d.get("intitule"));
+                            doc.setStatus(Integer.parseInt(d.get("status")));
+                            doc.setTag(d.get("tags"));
+                            doc.setVersion(d.get("version"));
+                            Set<Utilisateur> utilisateurs_autorises = new HashSet<>();
+                            String[] utilisateurs = d.get("utilAutorises").split(" ");
+                            for (int j = 0; j < utilisateurs.length; j++) {
+                                Utilisateur utilisateur = utilisateurHandler.get(utilisateurs[j]);
+                                if (utilisateur != null) {
+                                    utilisateurs_autorises.add(utilisateur);
+                                }
+                            }
+                            doc.setUtilisateursAvecDroit(utilisateurs_autorises);
+                            if (d.get("synchronise").equals("false")) {
+                                if (documentHandler.add(doc)) {
+                                    d.put("synchronise", "true");
+                                    d.put("idDocPublie", Integer.toString(doc.getId()));
+                                    xmlHelper.modifierDocumentXml(d);
+                                }
+                            } else {
+                                Document docAModifier = documentHandler.get(Integer.parseInt(d.get("idDocPublie")));
+                                doc.setId(docAModifier.getId());
+                                documentHandler.update(doc);
+                                Historique historique = new Historique();
+                                historique.setContenu(doc.getDernierContenu());
+                                historique.setEditeur(doc.getDernierEditeur());
+                                historique.setVersion(doc.getVersion());
+                                historique.setDateModif(doc.getDateDerniereModif());
+                                historique.setDocument(doc);
+                                IHistoriqueHandler historiqueHandler = new HistoriqueHandler();
+                                historiqueHandler.add(historique);
+
+                            }
+                        }
+                        //MessageBox.show("Synchronisation de la version horsligne effectué", MessageBox.INFO, this);
+
+                    }
                     System.out.println("Im logging in ...");
-                    emailTxt.setText("");
-                    mdpTxt.setText("");
+                    if (!chbxRememberMe.isSelected()) {
+                        emailTxt.setText("");
+                        mdpTxt.setText("");
+                    }
+                    this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
                     new Dashboard(this);
                 }
             }
@@ -356,15 +476,82 @@ public class Connexion extends javax.swing.JFrame {
             String email = emailTxt.getText().trim();
             String mdp = mdpTxt.getText().trim();
             if (email.length() != 0 && mdp.length() != 0) {
+                this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+
                 new DashboardHorsLigne(this, email, mdp);
             }
         }
     }//GEN-LAST:event_btnConnexionActionPerformed
 
+    private void radioHlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioHlActionPerformed
+        isEnligne = false;
+        __chargerMode();
+
+    }//GEN-LAST:event_radioHlActionPerformed
+
+    private void radioElActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_radioElActionPerformed
+        try {
+            isEnligne = true;
+            System.out.println("dkhelt");
+            SessionFactoryHelper.init();
+            URI uri = new URI("ws://localhost:8085/chat/0/-1");
+            ClientEndPointX chatWS = new ClientEndPointX(uri);
+            chatWS.close();
+        } catch (Exception e) {
+            isEnligne = false;
+            radioHl.setSelected(true);
+        }
+
+        __chargerMode();
+    }//GEN-LAST:event_radioElActionPerformed
+
+    private void chbxRememberMeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chbxRememberMeActionPerformed
+        String[] keys = {"uilisateur", "mdp"};
+        if (chbxRememberMe.isSelected()) {
+
+            String[] values = {emailTxt.getText(), mdpTxt.getText()};
+            Util.setPropertiesUtilisateur(keys, values);
+        } else {
+            String[] values = {"x", "x"};
+            Util.setPropertiesUtilisateur(keys, values);
+        }
+
+
+    }//GEN-LAST:event_chbxRememberMeActionPerformed
+
+    private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel1MouseClicked
+
+Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+        if (desktop != null && desktop.isSupported(Desktop.Action.BROWSE)) {
+            try {
+                URL url = new URL(Util.getProperty("host")+"/connexion?mdp-oublie=true");
+                System.out.println(url.toURI());
+                desktop.browse(url.toURI());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        
+
+    }//GEN-LAST:event_jLabel1MouseClicked
+
+    private void __chargerMode() {
+        lblStatus.setVisible(!isEnligne);
+        lblStatus1.setVisible(!isEnligne);
+        lblStatus2.setVisible(!isEnligne);
+        lblStatus.setText("Vous êtes en mode hors connexion");
+        lblStatus.setForeground(Color.red);
+        lblStatus2.setText("Vous pouvez creer des documents en fournissant vos infos");
+        lblStatus2.setForeground(Color.red);
+        lblStatus1.setText("Cela sera enregistré lors de votre prochaine connexion ");
+        lblStatus1.setForeground(Color.red);
+        btnInscription.setEnabled(isEnligne);
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField PrenomTxt;
     private javax.swing.JButton btnConnexion;
     private javax.swing.JButton btnInscription;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JCheckBox chbxRememberMe;
     private javax.swing.JTextField emailTxt;
     private javax.swing.JTextField emailTxtInscription;
@@ -395,6 +582,8 @@ public class Connexion extends javax.swing.JFrame {
     private javax.swing.JPasswordField mdpInscriptionTxt;
     private javax.swing.JPasswordField mdpTxt;
     private javax.swing.JTextField nomTxt;
+    private javax.swing.JRadioButton radioEl;
+    private javax.swing.JRadioButton radioHl;
     private javax.swing.JPasswordField verificationMdpTxt;
     // End of variables declaration//GEN-END:variables
 }

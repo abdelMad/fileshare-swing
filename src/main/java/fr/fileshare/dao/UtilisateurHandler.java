@@ -87,7 +87,7 @@ public class UtilisateurHandler implements IUtilisateurHandler {
 
                     if (object != null) {
                         utilisateur = (Utilisateur) object;
-                        MessageBox.show("Connecté",MessageBox.SUCCESS,null);
+                        //MessageBox.show("Connecté",MessageBox.SUCCESS,null);
 
                         check = true;
                     } else

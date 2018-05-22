@@ -23,6 +23,7 @@ import fr.fileshare.utilities.JsonHelper;
 import fr.fileshare.websocket.ClientEndPointX;
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.Desktop;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
@@ -95,6 +96,7 @@ public class Dashboard extends javax.swing.JFrame {
     private Action underlineAction = new StyledEditorKit.UnderlineAction();
     private Action italicAction = new StyledEditorKit.ItalicAction();
     private Color currentColor;
+    HTMLEditorKit htmlEditorKit = new HTMLEditorKit();
     String[] fontTypes = {"", "Arial", "Courier", "Comic Sans MS", "Helvetica", "Open Sans", "Tahoma", "Verdana"};
     Integer[] tailles = {-1, 1, 3, 5};
     JButton declancheAction = new JButton();
@@ -249,6 +251,7 @@ public class Dashboard extends javax.swing.JFrame {
         HistoriqueDoc = new javax.swing.JTable();
         jButton24 = new javax.swing.JButton();
         jButton25 = new javax.swing.JButton();
+        lblIntituleHistorique = new javax.swing.JLabel();
         jPanel14 = new javax.swing.JPanel();
         scrollPcontactes = new java.awt.ScrollPane();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -331,7 +334,7 @@ public class Dashboard extends javax.swing.JFrame {
         lblNomUtilisateur.setForeground(new java.awt.Color(255, 255, 255));
         lblNomUtilisateur.setText("nom utilisateur");
         lblNomUtilisateur.setToolTipText("");
-        jPanel2.add(lblNomUtilisateur, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 20, -1, 20));
+        jPanel2.add(lblNomUtilisateur, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 20, -1, 20));
         jPanel2.add(lblUtilisateurImage, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 90, 90));
 
         jLabel10.setFont(new java.awt.Font("SansSerif", 0, 13)); // NOI18N
@@ -581,7 +584,7 @@ public class Dashboard extends javax.swing.JFrame {
             .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel8Layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 716, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 738, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jLabel1))
                 .addGroup(jPanel8Layout.createSequentialGroup()
@@ -596,7 +599,7 @@ public class Dashboard extends javax.swing.JFrame {
                 .addGroup(jPanel8Layout.createSequentialGroup()
                     .addGap(240, 240, 240)
                     .addComponent(btnVoirUtilisateurs)))
-            .addContainerGap(21, Short.MAX_VALUE))
+            .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     jPanel8Layout.setVerticalGroup(
         jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -667,9 +670,6 @@ public class Dashboard extends javax.swing.JFrame {
     jPanel10.setLayout(jPanel10Layout);
     jPanel10Layout.setHorizontalGroup(
         jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-        .addGroup(jPanel10Layout.createSequentialGroup()
-            .addComponent(jScrollPane5)
-            .addContainerGap())
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel10Layout.createSequentialGroup()
             .addContainerGap(282, Short.MAX_VALUE)
             .addGroup(jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -677,6 +677,10 @@ public class Dashboard extends javax.swing.JFrame {
                 .addComponent(jButton21, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton20, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
             .addGap(237, 237, 237))
+        .addGroup(jPanel10Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jScrollPane5)
+            .addContainerGap())
     );
     jPanel10Layout.setVerticalGroup(
         jPanel10Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -725,27 +729,35 @@ public class Dashboard extends javax.swing.JFrame {
         }
     });
 
+    lblIntituleHistorique.setText("jLabel3");
+
     javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
     jPanel11.setLayout(jPanel11Layout);
     jPanel11Layout.setHorizontalGroup(
         jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel11Layout.createSequentialGroup()
-            .addContainerGap(27, Short.MAX_VALUE)
-            .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 716, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addContainerGap())
+            .addGap(0, 0, Short.MAX_VALUE)
+            .addComponent(lblIntituleHistorique, javax.swing.GroupLayout.PREFERRED_SIZE, 131, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(283, 283, 283))
         .addGroup(jPanel11Layout.createSequentialGroup()
             .addGap(251, 251, 251)
             .addGroup(jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jButton25, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jButton24, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addGap(236, 236, 236))
+            .addContainerGap(268, Short.MAX_VALUE))
+        .addGroup(jPanel11Layout.createSequentialGroup()
+            .addContainerGap()
+            .addComponent(jScrollPane6)
+            .addContainerGap())
     );
     jPanel11Layout.setVerticalGroup(
         jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
         .addGroup(jPanel11Layout.createSequentialGroup()
             .addContainerGap()
+            .addComponent(lblIntituleHistorique)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 388, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
             .addComponent(jButton25, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton24, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1046,7 +1058,7 @@ public class Dashboard extends javax.swing.JFrame {
 
     jLabel7.setText("Titre du document");
 
-    cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Public", "Just moi", "Des utilisateurs" }));
+    cmbStatus.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Public", "Juste moi", "Des utilisateurs" }));
     cmbStatus.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             cmbStatusActionPerformed(evt);
@@ -1180,7 +1192,7 @@ public class Dashboard extends javax.swing.JFrame {
     jbtnSupprimerDocModifierDoc.setText("Retirer des favoris");
     jbtnSupprimerDocModifierDoc.addActionListener(new java.awt.event.ActionListener() {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            jbtnSupprimerDocModifierDocActionPerformed(evt);
+            jButton19ActionPerformed(evt);
         }
     });
 
@@ -1690,11 +1702,18 @@ public class Dashboard extends javax.swing.JFrame {
             HistoriqueDoc.getColumnModel().getColumn(0).setMinWidth(0);
             HistoriqueDoc.getColumnModel().getColumn(0).setMaxWidth(0);
             HistoriqueDoc.getColumnModel().getColumn(0).setWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(1).setMinWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(1).setMaxWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(1).setWidth(0);
             HistoriqueDoc.getColumnModel().getColumn(4).setMinWidth(0);
             HistoriqueDoc.getColumnModel().getColumn(4).setMaxWidth(0);
             HistoriqueDoc.getColumnModel().getColumn(4).setWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(5).setMinWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(5).setMaxWidth(0);
+            HistoriqueDoc.getColumnModel().getColumn(5).setWidth(0);
 
             for (int l = 0; l < historique.size(); l++) {
+                lblIntituleHistorique.setText(historique.get(l).getDocument().getIntitule());
                 rowData[0] = historique.get(l).getDocument().getAuteur().getId();
                 rowData[1] = historique.get(l).getDocument().getIntitule();
                 rowData[2] = historique.get(l).getDateModif();
@@ -1753,15 +1772,17 @@ public class Dashboard extends javax.swing.JFrame {
 
         DefaultTableModel model = (DefaultTableModel) MesFavoris.getModel();
         int i = MesFavoris.getSelectedRow();
-
+        System.out.println("index: " + i);
         if (i >= 0) {
             /* Verifier si l'utilisateur connecté est l'auteur du document avant suppression */
             if (Integer.parseInt(model.getValueAt(i, 0).toString()) == UtilisateurHandler.utilisateur.getId()) {
                 int confirmation = JOptionPane.showConfirmDialog(null, "Voulez-vous vraiment retirer ce document de vos favoris ?", "Confirmation retrait favoris", JOptionPane.YES_NO_OPTION);
                 if (confirmation == 0) {
-                    model.removeRow(i);
                     DocumentHandler documentHandler = new DocumentHandler();
+                    //"Id_auteur", "Intitulé", "Date de publication", "Dernière modification", "Tags", "Dernier éditeur", "Statut", "Id_doc","id_utilisateurs"
                     documentHandler.supprimerFavoris(UtilisateurHandler.utilisateur.getId(), Integer.parseInt(model.getValueAt(i, 7).toString()));
+                    model.removeRow(i);
+
                 }
             }
         } else {
@@ -1773,14 +1794,14 @@ public class Dashboard extends javax.swing.JFrame {
         // TODO add your handling code here:
         /* Suppression Document Favoris */
 
-        DefaultTableModel model = (DefaultTableModel) MesFavoris.getModel();
-        int i = MesFavoris.getSelectedRow();
+        DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
+        int i = MesDocuments.getSelectedRow();
 
         if (i >= 0) {
-            int confirmation = JOptionPane.showConfirmDialog(null, "Voulez-vous vraiment retirerr ce document des favoris?", "Confirmation suppression", JOptionPane.YES_NO_OPTION);
+            int confirmation = JOptionPane.showConfirmDialog(null, "Voulez-vous vraiment supprimer ce document ?", "Confirmation suppression", JOptionPane.YES_NO_OPTION);
             if (confirmation == 0) {
                 IDocumentHandler documentHandler = new DocumentHandler();
-                if (documentHandler.supprimerFavoris(UtilisateurHandler.utilisateur.getId(), Integer.parseInt(model.getValueAt(i, 7).toString()))) {
+                if (documentHandler.delete(documentHandler.get(Integer.parseInt(model.getValueAt(i, 7).toString())))) {
                     model.removeRow(i);
                 }
             }
@@ -1937,18 +1958,19 @@ public class Dashboard extends javax.swing.JFrame {
                         System.out.println("Messare received");
                         Map<String, String> doc = helper.decodeDoc(responseString);
                         //docTxt.setText(doc.get("txt"));
+                        docTxt.setEditorKit(editorKit);
                         docTxt.setDocument(document);
-                        Element[] roots = document.getRootElements();
-                        Element body = null;
-                        for (int i = 0; i < roots[0].getElementCount(); i++) {
-                            Element element = roots[0].getElement(i);
-                            if (element.getAttributes().getAttribute(StyleConstants.NameAttribute) == HTML.Tag.BODY) {
-                                body = element;
-                                break;
-                            }
+                        System.out.println(doc.get("txt"));
+                        //document.insertString(0, doc.get("txt"), null);
+                        String topWrap = "<html><head></head><body>", bottomWrap = "</body></html>";
+                        String infos = "";
+                        if (!doc.get("txt").contains("<html>") && !doc.get("txt").contains("<body>")) {
+                            infos = topWrap + doc.get("txt") + bottomWrap;
+                        } else {
+                            infos = doc.get("txt");
                         }
-                        System.out.println(body);
-                        document.setInnerHTML(body, doc.get("txt"));
+                        //editorKit.insertHTML(document, 0, infos, 0, 0, HTML.Tag.P);
+                        docTxt.setText(infos);
                     }
                 } catch (Exception e) {
                     isModifEnligne = false;
@@ -1978,24 +2000,30 @@ public class Dashboard extends javax.swing.JFrame {
         }
         Document document = documentHandler.get(idSelectedDoc);
         System.out.println("Dernier contenu: " + document.getDernierContenu());
-        Element[] roots = this.document.getRootElements();
-        Element body = null;
-        for (int i = 0; i < roots[0].getElementCount(); i++) {
-            Element element = roots[0].getElement(i);
-            System.out.println(element.getName());
-            if (element.getAttributes().getAttribute(StyleConstants.NameAttribute) == HTML.Tag.BODY) {
-                body = element;
-                break;
-            }
-        }
-        System.out.println(body);
-
         try {
-            this.document.setInnerHTML(body, document.getDernierContenu());
+            docTxt.setEditorKit(editorKit);
+            docTxt.setDocument(this.document);
+            /*String topWrap = "<html><head></head><body>", bottomWrap = "</body></html>";
+            String infos = "";
+            if (!doc.get("txt").contains("<html>") && !doc.get("txt").contains("<body>")) {
+                infos=topWrap+doc.get("txt")+bottomWrap;
+            }else
+                infos = doc.get("txt");*/
+            docTxt.setText("");
+            editorKit.insertHTML(this.document, 0, document.getDernierContenu() != null ? document.getDernierContenu() : "", 0, 0, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
+        if (documentHandler.estFavoris(idSelectedDoc, UtilisateurHandler.utilisateur.getId())) {
+            jButton11.setText("Retirer des favoris");
+        } else {
+            jButton11.setText("Ajouter au favoris");
+        }
+        if (UtilisateurHandler.utilisateur.getId() != document.getAuteur().getId()) {
+            jButton9.setEnabled(false);
+        } else {
+            jButton9.setEnabled(true);
+        }
         lblTitreDoc.setText(document.getIntitule());
         tabPaneMain.setSelectedIndex(4);
     }
@@ -2025,6 +2053,8 @@ public class Dashboard extends javax.swing.JFrame {
             Document document = documentHandler.get(idSelectedDoc);
             documentHandler.telechargerDoc(document, fc.getSelectedFile().getAbsolutePath());
         }
+        this.setCursor(defaultCursor);
+
     }
     private void btnVoirmesDocsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirmesDocsActionPerformed
         /* Voir Document */
@@ -2047,7 +2077,7 @@ public class Dashboard extends javax.swing.JFrame {
         int i = MesDocuments.getSelectedRow();
         //jButton11.setActionCommand(Integer.toString(model.getValueAt(i, 1)));
     }//GEN-LAST:event_MesDocumentsMouseClicked
-
+    
     private void jButton8ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton8ActionPerformed
 
         String txt = msgGrpTxt.getText();
@@ -2519,6 +2549,7 @@ public class Dashboard extends javax.swing.JFrame {
     private javax.swing.JButton jbtnSupprimerDocModifierDoc;
     private javax.swing.JLabel jlblColorViewer;
     private javax.swing.JLabel lblAccueilIcone3;
+    private javax.swing.JLabel lblIntituleHistorique;
     private javax.swing.JLabel lblMesDocIcone;
     private javax.swing.JLabel lblNomUtilisateur;
     private javax.swing.JLabel lblStatus;

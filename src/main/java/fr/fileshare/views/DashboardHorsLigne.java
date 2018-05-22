@@ -13,10 +13,12 @@ import fr.fileshare.model.Utilisateur;
 import fr.fileshare.utilities.Util;
 import fr.fileshare.utilities.XmlHelper;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -28,6 +30,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JColorChooser;
 import javax.swing.JEditorPane;
+import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.event.UndoableEditEvent;
 import javax.swing.event.UndoableEditListener;
@@ -71,6 +74,8 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
     int keyPressed = -1;
     XmlHelper xmlHelper = new XmlHelper();
     List<HashMap<String, String>> documents = new ArrayList<>();
+    private Cursor waitCursor = new Cursor(Cursor.WAIT_CURSOR);
+    private Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 
     public DashboardHorsLigne(Connexion cnx, String email, String mdp) {
         initComponents();
@@ -79,6 +84,7 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
         this.mdp = mdp;
         cnx.setVisible(false);
         this.setVisible(true);
+        pnlPartage.setVisible(false);
         lblNomUtilisateur.setText(email);
 
         tabPaneMain.setUI(new javax.swing.plaf.metal.MetalTabbedPaneUI() {
@@ -185,6 +191,11 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+        });
 
         container.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -323,6 +334,11 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
     btnVoirmesDocs.setText("Voir Document");
 
     btnTelechargerDoc.setText("Télécharger");
+    btnTelechargerDoc.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnTelechargerDocActionPerformed(evt);
+        }
+    });
 
     btnModifierMesDoc.setText("Modifier");
     btnModifierMesDoc.addActionListener(new java.awt.event.ActionListener() {
@@ -339,6 +355,11 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
     });
 
     btnVoirmesDocs1.setText("Supprimer");
+    btnVoirmesDocs1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            btnVoirmesDocs1ActionPerformed(evt);
+        }
+    });
 
     javax.swing.GroupLayout jPanel8Layout = new javax.swing.GroupLayout(jPanel8);
     jPanel8.setLayout(jPanel8Layout);
@@ -364,7 +385,7 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
                     .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addComponent(btnModifierMesDoc, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(btnVoirmesDocs1, javax.swing.GroupLayout.PREFERRED_SIZE, 230, javax.swing.GroupLayout.PREFERRED_SIZE))))
-            .addContainerGap(21, Short.MAX_VALUE))
+            .addContainerGap(22, Short.MAX_VALUE))
     );
     jPanel8Layout.setVerticalGroup(
         jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -575,6 +596,11 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
     jPanel16.add(jPanel13, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 20, 500, 110));
 
     jButton1.setText("Enregistrer");
+    jButton1.addActionListener(new java.awt.event.ActionListener() {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+            jButton1ActionPerformed(evt);
+        }
+    });
     jPanel16.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 420, 140, 40));
 
     jPanel15.add(jPanel16, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 48, 740, 500));
@@ -846,18 +872,13 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
 
     private void jButton9ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton9ActionPerformed
 
-        /*txtIntitule.setText(doc.getIntitule());
-        txtDesc.setText(doc.getDescription());
-        txtTags.setText(doc.getTag());
-        String emails = "";
-
-        for (Iterator<Utilisateur> it = doc.getUtilisateursAvecDroit().iterator(); it.hasNext();) {
-            Utilisateur u = it.next();
-            emails += " " + u.getEmail();
-        }
-        txtEmails.setText(emails);
-        cmbStatus.setSelectedIndex(doc.getStatus());*/
-        tabPaneMain.setSelectedIndex(5);
+        txtIntitule.setText(selectedDoc.get("intitule"));
+        txtDesc.setText(selectedDoc.get("description"));
+        txtTags.setText(selectedDoc.get("tags"));
+        cmbStatus.setSelectedIndex(Integer.parseInt(selectedDoc.get("status")));
+        txtEmails.setText(selectedDoc.get("utilAutorises"));
+        modifDetails = true;
+        tabPaneMain.setSelectedIndex(2);
     }//GEN-LAST:event_jButton9ActionPerformed
 
     private void cmbStatusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbStatusActionPerformed
@@ -886,19 +907,21 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
                 }
             }
             HashMap<String, String> doc = new HashMap<>();
-            if (!modifDetails) {
-                doc = new HashMap<>();
+            if (modifDetails) {
+                doc.put("idDoc", selectedDoc.get("idDoc"));
             } else {
+                doc.put("idDoc", Util.generateUniqueToken());
 
             }
             // (idDoc,emailAuteur,mdpAuteur,datePub,tags,text,version,status,utilAutorises)
             Date currentDate = new Date();
-            doc.put("idDoc", Util.generateUniqueToken());
+             SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+             
+            doc.put("intitule", intitule);
             doc.put("emailAuteur", email);
             doc.put("mdpAuteur", mdp);
-            doc.put("datePub", currentDate.toString());
+            doc.put("datePub", formatter.format(currentDate));
             doc.put("tags", tags);
-            doc.put("text", "x");
             doc.put("description", description);
             doc.put("version", Util.hashString(Util.generateUniqueToken()));
             doc.put("status", Integer.toString(cmbStatus.getSelectedIndex()));
@@ -909,21 +932,25 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
                 doc.put("utilAutorises", "");
             }
             if (!modifDetails) {
+                doc.put("synchronise", "false");
                 List<HashMap<String, String>> ds = new ArrayList<>();
                 ds.add(doc);
-                for (String name : ds.get(0).keySet()) {
-
-            String key = name.toString();
-            String value = ds.get(0).get(name).toString();
-            System.out.println("key " + key + "value " + value);
-
-
-        }
+                txtDesc.setText("");
+                txtEmails.setText("");
+                txtIntitule.setText("");
+                txtTags.setText("");
+                pnlPartage.setVisible(false);
+                cmbStatus.setSelectedIndex(0);
                 xmlHelper.saveToXMLDocument(ds);
                 selectedDoc = doc;
-                btnMesDocuments.doClick();
+                __modificationDocument();
             } else {
-
+                
+                doc.put("synchronise", selectedDoc.get("synchronise"));
+                doc.put("text", selectedDoc.get("text"));
+                doc.put("idDocPublie", selectedDoc.get("idDocPublie"));
+                xmlHelper.modifierDocumentXml(doc);
+                selectedDoc = doc;
             }
 
         }
@@ -941,7 +968,7 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
         loadDocuments();
     }//GEN-LAST:event_btnMesDocumentsActionPerformed
     private void loadDocuments() {
-        documents = xmlHelper.readXmlDocument();
+        documents = xmlHelper.readXmlDocument(email, mdp);
 
         DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
         /* Supprimer les données du JTable avant chaque remplissage */
@@ -998,22 +1025,70 @@ public class DashboardHorsLigne extends javax.swing.JFrame {
 
         if (i >= 0) {
             selectedDoc = documents.get(i);
-            lblTitreDoc.setText(selectedDoc.get("intitule"));
-            docTxt.setDocument(document);
-
-            try {
-                docTxt.setText(selectedDoc.get("text"));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            tabPaneMain.setSelectedIndex(1);
-
+            __modificationDocument();
         } else {
             MessageBox.show("Aucun Document n'a été selectionné !", MessageBox.WARNING, this);
         }
 
 
     }//GEN-LAST:event_btnModifierMesDocActionPerformed
+    private void __modificationDocument() {
+        lblTitreDoc.setText(selectedDoc.get("intitule"));
+        docTxt.setDocument(document);
+
+        try {
+            docTxt.setText(selectedDoc.get("text"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        tabPaneMain.setSelectedIndex(1);
+    }
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+
+        cnx.setVisible(true);
+    }//GEN-LAST:event_formWindowClosing
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+
+        if(selectedDoc.get("synchronise").equals("true"))
+                    selectedDoc.put("version", Util.hashString(Util.generateUniqueToken()));
+        selectedDoc.put("text", docTxt.getText());
+        xmlHelper.modifierDocumentXml(selectedDoc);
+
+    }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void btnVoirmesDocs1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnVoirmesDocs1ActionPerformed
+        DefaultTableModel model = (DefaultTableModel) MesDocuments.getModel();
+        int i = MesDocuments.getSelectedRow();
+
+        if (i >= 0) {
+            selectedDoc = documents.get(i);
+            xmlHelper.supprimerDocumentXml(selectedDoc.get("idDoc"));
+            model.removeRow(i);
+        }
+    }//GEN-LAST:event_btnVoirmesDocs1ActionPerformed
+
+    private void btnTelechargerDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTelechargerDocActionPerformed
+
+        int i = MesDocuments.getSelectedRow();
+
+        if (i >= 0) {
+            selectedDoc = documents.get(i);
+            JFileChooser fc = new JFileChooser();
+            fc.setDialogTitle("Téléchargement Document");
+            fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            if (fc.showOpenDialog(btnTelechargerDoc) == JFileChooser.APPROVE_OPTION) {
+                this.setCursor(waitCursor);
+                btnTelechargerDoc.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                IDocumentHandler documentHandler = new DocumentHandler();
+                Document document = new Document();
+                document.setIntitule(selectedDoc.get("intitule"));
+                document.setDernierContenu(selectedDoc.get("text"));
+                documentHandler.telechargerDoc(document, fc.getSelectedFile().getAbsolutePath());
+            }
+            this.setCursor(defaultCursor);
+        }
+    }//GEN-LAST:event_btnTelechargerDocActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

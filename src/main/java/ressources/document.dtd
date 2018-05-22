@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
         <!ELEMENT documents (document)*>
-        <!ELEMENT document (idDoc,intitule,emailAuteur,mdpAuteur,datePub,tags,text,version,status,utilAutorises,description)>
+        <!ELEMENT document (idDoc,intitule,emailAuteur,mdpAuteur,datePub,tags,text,version,status,utilAutorises,description,idDocPublie)>
         <!ELEMENT idDoc (#PCDATA)>
         <!ELEMENT intitule (#PCDATA)>
         <!ELEMENT emailAuteur (#PCDATA)>
@@ -12,3 +12,5 @@
         <!ELEMENT status (#PCDATA)>
         <!ELEMENT utilAutorises (#PCDATA)>
         <!ELEMENT description (#PCDATA)>
+        <!ELEMENT synchronise (#PCDATA)>
+        <!ELEMENT idDocPublie (#PCDATA)>

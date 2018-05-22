@@ -1,12 +1,14 @@
 package fr.fileshare.utilities;
 
-
 import fr.fileshare.views.MessageBox;
+import java.io.File;
+import java.io.FileOutputStream;
 import javax.mail.Message;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
@@ -17,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
+
 /**
  * classe qui contient des methodes utiles
  */
@@ -52,10 +55,10 @@ public class Util {
     /**
      * @param toEmail the recipient
      * @param subject mail subject
-     * @param body    mail body
+     * @param body mail body
      * @return true if the email is sent successfully, if not return false.
      */
-        public static boolean sendEmail(String toEmail, String subject, String body) {
+    public static boolean sendEmail(String toEmail, String subject, String body) {
         try {
             final String username = "no.replay.fileshare@gmail.com";
             final String password = "FileShare2018";
@@ -69,10 +72,10 @@ public class Util {
 //            javax.mail.Session session = javax.mail.Session.getInstance(props, null);
             Session session = Session.getInstance(props,
                     new javax.mail.Authenticator() {
-                        protected PasswordAuthentication getPasswordAuthentication() {
-                            return new PasswordAuthentication(username, password);
-                        }
-                    });
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(username, password);
+                }
+            });
             MimeMessage msg = new MimeMessage(session);
             //set message headers
             msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
@@ -98,8 +101,6 @@ public class Util {
         return false;
     }
 
-
-
     /**
      * check whether the email is valid or not
      *
@@ -117,13 +118,14 @@ public class Util {
      * check if the element exist in String enum
      *
      * @param enumeration String enum
-     * @param element     key of the element we want to search
+     * @param element key of the element we want to search
      * @return true or false
      */
     public static boolean elementExistInEnum(Enumeration<String> enumeration, String element) {
         while (enumeration.hasMoreElements()) {
-            if (enumeration.nextElement().equals(element))
+            if (enumeration.nextElement().equals(element)) {
                 return true;
+            }
         }
         return false;
     }
@@ -136,9 +138,15 @@ public class Util {
      */
     public static String getProperty(String paramName) {
         String param = "";
+        param = getPropertyOfAnyFile(paramName, "params.properties");
+        return param;
+    }
+
+    private static String getPropertyOfAnyFile(String paramName, String url) {
+        String param = "";
         try {
             Properties prop = new Properties();
-            String propFileName = "params.properties";
+            String propFileName = url;
             InputStream inputStream = Util.class.getClassLoader().getResourceAsStream(propFileName);
             if (inputStream != null) {
                 prop.load(inputStream);
@@ -149,14 +157,42 @@ public class Util {
             e.printStackTrace();
         }
         return param;
-
     }
-    
+    public static String getPropertyUtilisateur(String paramName) {
+        String param = "";
+        param = getPropertyOfAnyFile(paramName, "utilisateur.properties");
+        return param;
+    }
+    /**
+     * set property from params.properties file
+     *
+     * @param paramName parameter name
+     * @param value value of parameter
+     * @return the of the given parameter
+     */
+    public static String setPropertiesUtilisateur(String[] paramName, String[] value) {
+        String param = "";
+        try {
+            Properties prop = new Properties();
+            String propFileName = "utilisateur.properties";
+            File f = new File(System.getProperty("user.dir") + "/src/main/java/ressources/" + propFileName);;
+            OutputStream out = new FileOutputStream(f);
+            for (int i = 0; i < paramName.length; i++) {
+                prop.setProperty(paramName[i], value[i]);
+
+            }
+
+            prop.store(out, "");
+            out.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return param;
+    }
+
     public static String generateUniqueToken() {
         UUID uuid = UUID.randomUUID();
         return hashString(uuid.toString());
     }
-
-
 
 }
