@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE documents PUBLIC "documents" "document.dtd">
+<documents>
+<document>
+<idDoc>1b7e3117c4080bc0a477a884941faeed</idDoc>
+<intitule>test Modifié</intitule>
+<emailAuteur>abdelmoghit@gmail.com</emailAuteur>
+<mdpAuteur>aqwzsxedc</mdpAuteur>
+<datePub>21/05/2018 23:13</datePub>
+<tags>#ded</tags>
+<text>&lt;html&gt;
+  &lt;head&gt;
+
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;p style="margin-top: 0"&gt;
+      palomas
+    &lt;/p&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</text>
+<version>56aaa6cacdf1d1875f0d07c8ab9172ef</version>
+<status>0</status>
+<utilAutorises/>
+<description>sdfsdf</description>
+<synchronise>true</synchronise>
+<idDocPublie>125</idDocPublie>
+</document>
+</documents>
