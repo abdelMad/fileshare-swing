@@ -2,28 +2,27 @@
 <!DOCTYPE documents PUBLIC "documents" "document.dtd">
 <documents>
 <document>
-<idDoc>1b7e3117c4080bc0a477a884941faeed</idDoc>
-<intitule>test Modifié</intitule>
-<emailAuteur>abdelmoghit@gmail.com</emailAuteur>
-<mdpAuteur>aqwzsxedc</mdpAuteur>
-<datePub>21/05/2018 23:13</datePub>
-<tags>#ded</tags>
+<idDoc>cce336394dddadbf959921e03139834c</idDoc>
+<intitule>Test Hors ligne</intitule>
+<emailAuteur>abdelmoghit.madih@gmail.com</emailAuteur>
+<mdpAuteur>qwerty123</mdpAuteur>
+<datePub>23/05/2018 10:52</datePub>
+<tags>#horsligne</tags>
 <text>&lt;html&gt;
   &lt;head&gt;
 
   &lt;/head&gt;
   &lt;body&gt;
     &lt;p style="margin-top: 0"&gt;
-      palomas
+      Lorem i[psmu
     &lt;/p&gt;
   &lt;/body&gt;
-&lt;/html&gt;
-</text>
-<version>56aaa6cacdf1d1875f0d07c8ab9172ef</version>
+&lt;/html&gt;</text>
+<version>a2ce70b5d67aa344d221bd7dc1683935</version>
 <status>0</status>
 <utilAutorises/>
-<description>sdfsdf</description>
+<description>Blabla</description>
 <synchronise>true</synchronise>
-<idDocPublie>125</idDocPublie>
+<idDocPublie>56</idDocPublie>
 </document>
 </documents>

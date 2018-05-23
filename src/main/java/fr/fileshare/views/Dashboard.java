@@ -176,8 +176,9 @@ public class Dashboard extends javax.swing.JFrame {
         jlblColorViewer.setIcon(jlabelIcon(Color.BLACK));
         HTMLEditorKit editorKit = new HTMLEditorKit();
         document = (HTMLDocument) editorKit.createDefaultDocument();
-        docTxt.setDocument(document);
         document.addUndoableEditListener(undoHandler);
+        docTxt.setDocument(document);
+        
 
     }
 
@@ -1904,6 +1905,7 @@ public class Dashboard extends javax.swing.JFrame {
     public void __modifierDocument(int idSelectedDoc) {
         HTMLEditorKit editorKit = new HTMLEditorKit();
         document = (HTMLDocument) editorKit.createDefaultDocument();
+        document.addUndoableEditListener(undoHandler);
         docTxt.setDocument(document);
         URI uri = null;
         URI uriModifDoc = null;
